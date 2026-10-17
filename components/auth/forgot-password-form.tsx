@@ -2,9 +2,15 @@
 
 import { Mail } from "lucide-react";
 
-type ForgotPasswordFormProps = { onBackToLogin: () => void };
+type ForgotPasswordFormProps = {
+  onBackToLogin: () => void;
+  onCodeSent: () => void;
+};
 
-export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
+export function ForgotPasswordForm({
+  onBackToLogin,
+  onCodeSent,
+}: ForgotPasswordFormProps) {
   return (
     <div className="form-content forgot-content">
       <div className="eyebrow">ACCOUNT RECOVERY</div>
@@ -13,7 +19,12 @@ export function ForgotPasswordForm({ onBackToLogin }: ForgotPasswordFormProps) {
         Enter the email address or phone number associated with your account to
         receive a password reset code.
       </p>
-      <form onSubmit={(event) => event.preventDefault()}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          onCodeSent();
+        }}
+      >
         <label className="field-label" htmlFor="recovery-contact">
           Email or Phone
         </label>

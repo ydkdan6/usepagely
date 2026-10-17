@@ -5,10 +5,14 @@ import { ArtworkPanel } from "@/components/auth/artwork-panel";
 import { BrandHeader } from "@/components/auth/brand-header";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 import { LoginForm } from "@/components/auth/login-form";
+import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { SignupForm } from "@/components/auth/signup-form";
+import { VerifyCodeForm } from "@/components/auth/verify-code-form";
 
 export function AuthScreen() {
-  const [screen, setScreen] = useState<"login" | "signup" | "forgot">("login");
+  const [screen, setScreen] = useState<
+    "login" | "signup" | "forgot" | "verify" | "reset"
+  >("login");
 
   return (
     <main className="login-page">
@@ -19,7 +23,14 @@ export function AuthScreen() {
           {screen === "signup" ? (
             <SignupForm />
           ) : screen === "forgot" ? (
-            <ForgotPasswordForm onBackToLogin={() => setScreen("login")} />
+            <ForgotPasswordForm
+              onBackToLogin={() => setScreen("login")}
+              onCodeSent={() => setScreen("verify")}
+            />
+          ) : screen === "verify" ? (
+            <VerifyCodeForm onVerified={() => setScreen("reset")} />
+          ) : screen === "reset" ? (
+            <ResetPasswordForm onComplete={() => setScreen("login")} />
           ) : (
             <LoginForm
               onCreateAccount={() => setScreen("signup")}

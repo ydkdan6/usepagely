@@ -392,6 +392,26 @@
   margin-top: 28px;
 }
 
+.recovery-step-content .subheading {
+  max-width: 480px;
+}
+
+.text-action {
+  display: block;
+  margin: 23px auto 0;
+  border: 0;
+  background: transparent;
+  color: #0799ea;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.text-action:hover {
+  color: #078bd2;
+}
+
 .form-content {
   width: min(100%, 500px);
   animation: reveal .8s cubic-bezier(.2, .8, .2, 1) both;
