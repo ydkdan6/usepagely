@@ -105,7 +105,14 @@ export async function importBook(input: unknown) {
   if (chapterError) throw chapterError;
   const { error: insertError } = await supabase
     .from("chapters")
-    .insert(chapters.map((chapter) => ({ ...chapter, book_id: saved.id })));
+    .insert(
+      chapters.map((chapter) => ({
+        book_id: saved.id,
+        chapter_number: chapter.chapterNumber,
+        title: chapter.title,
+        content: chapter.content,
+      })),
+    );
   if (insertError) throw insertError;
   revalidateTag("books", "max");
   revalidatePath("/library");

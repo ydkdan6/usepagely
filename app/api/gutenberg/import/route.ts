@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { importBook } from "@/lib/books/import-book";
+
 export async function POST(request: Request) {
   const expected = process.env.GUTENBERG_ADMIN_TOKEN;
   const authorization = request.headers.get("authorization");
@@ -10,10 +11,14 @@ export async function POST(request: Request) {
       { id: await importBook(await request.json()) },
       { status: 201 },
     );
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Import failed" },
-      { status: 400 },
-    );
-  }
+  }  catch (error) {
+    console.error("IMPORT ERROR:", error);
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof error === "object" && error !== null && "message" in error
+          ? String((error as { message: unknown }).message)
+          : JSON.stringify(error);
+    return NextResponse.json({ error: message }, { status: 400 });
+}
 }
