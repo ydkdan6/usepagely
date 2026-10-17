@@ -15,6 +15,46 @@ export function bookCategories(subjects: string[], bookshelves: string[] = []) {
   ];
 }
 
+export type SeedSummary = {
+  imported: number[];
+  skipped: number[];
+  failed: { gutenberg_id: number; error: string }[];
+};
+
+export async function seedPopularBooks(): Promise<SeedSummary> {
+  const db = createServiceSupabaseClient();
+  const summary: SeedSummary = { imported: [], skipped: [], failed: [] };
+  const result = await popularGutendex(1);
+  const popular = result.results
+    .filter((book) => book.languages?.includes("en"))
+    .slice(0, 20);
+  const ids = popular.map((book) => book.id);
+  const { data: existing, error: existingError } = await db
+    .from("books")
+    .select("gutenberg_id")
+    .in("gutenberg_id", ids);
+  if (existingError) throw existingError;
+  const existingIds = new Set(
+    (existing ?? []).map((book) => book.gutenberg_id),
+  );
+  for (const book of popular) {
+    if (existingIds.has(book.id)) {
+      summary.skipped.push(book.id);
+      continue;
+    }
+    try {
+      await importBook({ gutenberg_id: book.id });
+      summary.imported.push(book.id);
+    } catch (error) {
+      summary.failed.push({
+        gutenberg_id: book.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+  return summary;
+}
+
 export async function ensureCatalog() {
   const db = createServiceSupabaseClient();
   const { count, error: countError } = await db

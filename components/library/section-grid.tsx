@@ -58,6 +58,10 @@ export function SectionGrid({
           No books are available yet. Import a Gutenberg book to start your
           library.
         </p>
+      ) : !isLoading && !data ? (
+        <p className="rounded-md border border-dashed border-[#1c1c26]/20 px-4 py-16 text-center text-sm text-[#1c1c26]/70">
+          No books are available yet. Seed the catalog to start your library.
+        </p>
       ) : (
         <div className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {isLoading || !data

@@ -4,7 +4,13 @@ import useSWR from "swr";
 import type { Book, BookQuery, Category, Paginated } from "@/lib/books/types";
 
 async function fetcher<T>(url: string): Promise<T> {
-  const response = await fetch(url, { cache: "no-store" });
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 10000);
+  const response = await fetch(url, {
+    cache: "no-store",
+    signal: controller.signal,
+  });
+  window.clearTimeout(timeout);
   const body = await response.json();
   if (!response.ok) {
     throw new Error(body?.error ?? `Request failed: ${response.status}`);
