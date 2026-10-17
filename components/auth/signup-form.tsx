@@ -26,44 +26,26 @@ export function SignupForm() {
           event.preventDefault();
           setLoading(true);
           setError("");
-
-          const formEl = event.currentTarget;
-          const form = new FormData(formEl);
-
-          // Read passwords directly from the inputs by id
-          const getValue = (id: string) =>
-            (formEl.elements.namedItem(id) as HTMLInputElement | null)?.value ??
-            "";
-
-          const password = getValue("signup-password");
-          const confirmPassword = getValue("confirm-password");
-
-          if (password.length < 8) {
-            setError("Password must be at least 8 characters.");
-            setLoading(false);
-            return;
-          }
-
-          if (password !== confirmPassword) {
+          const form = new FormData(event.currentTarget);
+          if (form.get("password") !== form.get("confirm-password")) {
             setError("Passwords do not match.");
             setLoading(false);
             return;
           }
-
-          const { error } = await signUp({
-            email: String(form.get("signup-email") ?? ""),
-            password,
-            name: String(form.get("full-name") ?? ""),
+          const { data, error } = await signUp({
+            email: form.get("signup-email"),
+            password: form.get("password"),
+            name: form.get("full-name"),
+            username: form.get("username"),
+            phone: form.get("phone"),
           });
-
           if (error) {
             setError(error.message);
             setLoading(false);
             return;
           }
-
-          router.push("/library");
-          router.refresh();
+          if (data.session) router.push("/library");
+          else router.push("/library");
         }}
       >
         <label className="field-label" htmlFor="full-name">
@@ -79,7 +61,6 @@ export function SignupForm() {
             required
           />
         </div>
-
         <label className="field-label" htmlFor="username">
           Username
         </label>
@@ -90,9 +71,9 @@ export function SignupForm() {
             name="username"
             type="text"
             autoComplete="username"
+            required
           />
         </div>
-
         <label className="field-label" htmlFor="signup-email">
           Email
         </label>
@@ -106,7 +87,6 @@ export function SignupForm() {
             required
           />
         </div>
-
         <label className="field-label" htmlFor="phone">
           Phone
         </label>
@@ -114,7 +94,6 @@ export function SignupForm() {
           <Phone aria-hidden="true" />
           <input id="phone" name="phone" type="tel" autoComplete="tel" />
         </div>
-
         <PasswordField
           id="signup-password"
           label="Password"
@@ -125,7 +104,6 @@ export function SignupForm() {
           label="Confirm Password"
           autoComplete="new-password"
         />
-
         <button className="login-button" type="submit" disabled={loading}>
           {loading ? "Creating account..." : "Sign up"}
         </button>
