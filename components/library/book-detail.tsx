@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { Book } from "@/lib/books/types";
 import { cn } from "@/lib/utils";
+import { saveOfflineBook, removeOfflineBook } from "@/lib/offline-db";
 
 const descriptions: Record<string, string> = {
   "101 cách của đồ đại lão hàng xóm":
@@ -34,12 +35,31 @@ export function BookDetail({ book }: { book: Book }) {
   const [review, setReview] = useState("");
   const [reviews, setReviews] = useState<string[]>(["AMAZING!!!"]);
   const [shared, setShared] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
+  const [offlineBusy, setOfflineBusy] = useState(false);
+
+  async function toggleOffline() {
+    setOfflineBusy(true);
+    try {
+      if (downloaded) {
+        await removeOfflineBook(book.id);
+        setDownloaded(false);
+      } else {
+        const response = await fetch(`/api/books/${book.id}`);
+        const data = await response.json();
+        await saveOfflineBook(book, data.chapters ?? []);
+        setDownloaded(true);
+      }
+    } finally {
+      setOfflineBusy(false);
+    }
+  }
   const description = getDescription(book);
 
   async function shareBook() {
     const shareData = {
       title: book.title,
-      text: `Read ${book.title} on BookOnline`,
+      text: `Read ${book.title} on UsePagely`,
       url: window.location.href,
     };
     if (navigator.share) await navigator.share(shareData);
@@ -126,6 +146,18 @@ export function BookDetail({ book }: { book: Book }) {
             >
               Read
             </Link>
+            <ActionButton
+              active={downloaded}
+              label={downloaded ? "Downloaded" : "Download for offline"}
+              onClick={toggleOffline}
+            >
+              <Bookmark
+                className={cn(
+                  "size-6",
+                  (downloaded || saved) && "fill-current",
+                )}
+              />
+            </ActionButton>
             <ActionButton
               active={saved}
               label={saved ? "Saved" : "Save"}

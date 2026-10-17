@@ -4,9 +4,12 @@ import useSWR from "swr";
 import type { Book, BookQuery, Category, Paginated } from "@/lib/books/types";
 
 async function fetcher<T>(url: string): Promise<T> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  const response = await fetch(url, { cache: "no-store" });
+  const body = await response.json();
+  if (!response.ok) {
+    throw new Error(body?.error ?? `Request failed: ${response.status}`);
+  }
+  return body;
 }
 
 export function useBooks({
@@ -14,7 +17,7 @@ export function useBooks({
   category,
   q,
   page = 1,
-  limit = 10,
+  limit = 24,
 }: BookQuery) {
   const params = new URLSearchParams({
     section,

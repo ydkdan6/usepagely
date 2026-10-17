@@ -17,7 +17,7 @@ export function AppSidebar() {
 
   return (
     <aside className="sticky top-0 hidden h-svh w-20 shrink-0 flex-col items-center border-r border-[#1c1c26]/10 bg-[#f1eee4] py-6 md:flex">
-      <Link href="/library" aria-label="BookOnline home" className="brand">
+      <Link href="/library" aria-label="UsePagely home" className="brand">
         <span className="brand-mark" aria-hidden="true">
           <span />
         </span>

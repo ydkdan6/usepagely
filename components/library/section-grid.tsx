@@ -55,7 +55,8 @@ export function SectionGrid({
         </p>
       ) : data && data.total === 0 ? (
         <p className="rounded-md border border-dashed border-[#1c1c26]/20 px-4 py-16 text-center text-sm text-[#1c1c26]/70">
-          No books match this filter yet.
+          No books are available yet. Import a Gutenberg book to start your
+          library.
         </p>
       ) : (
         <div className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">

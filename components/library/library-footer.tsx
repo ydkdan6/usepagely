@@ -12,7 +12,7 @@ export function LibraryFooter() {
     <footer className="mt-16 border-t border-[#1c1c26]/10 px-4 pt-12 pb-8 md:px-8">
       <div className="flex flex-col gap-10 md:flex-row md:justify-between">
         <div className="flex max-w-sm flex-col gap-4">
-          <span className="brand" aria-label="BookOnline">
+          <span className="brand" aria-label="UsePagely">
             <span className="brand-mark" aria-hidden="true">
               <span />
             </span>
@@ -44,7 +44,7 @@ export function LibraryFooter() {
       </div>
       <div className="mt-12 flex flex-col gap-3 text-xs text-[#1c1c26]/60 sm:flex-row sm:justify-between">
         <p>
-          Copyright &copy; {new Date().getFullYear()} BookOnline. All rights
+          Copyright &copy; {new Date().getFullYear()} UsePagely. All rights
           reserved.
         </p>
         <div className="flex gap-6">

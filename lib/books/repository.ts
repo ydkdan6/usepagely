@@ -1,70 +1,119 @@
-import { BOOKS, CATEGORIES } from "../books/mock-data";
-import type { Book, BookQuery, Category, Paginated } from "../books/types";
+import { createPublicSupabaseClient } from "@/lib/supabase/server";
+import type {
+  Book,
+  BookQuery,
+  Category,
+  Chapter,
+  Paginated,
+} from "@/lib/books/types";
 
-export function getBookById(id: string): Book | undefined {
-  return BOOKS.find((book) => book.id === id);
+function mapBook(row: any): Book {
+  return {
+    id: row.id,
+    gutenbergId: row.gutenberg_id,
+    title: row.title,
+    author: row.authors?.[0] ?? "Unknown author",
+    authors: row.authors ?? [],
+    subjects: row.subjects ?? [],
+    categories: row.categories ?? [],
+    language: row.language,
+    downloadCount: row.download_count ?? 0,
+    coverUrl: row.cover_url ?? "",
+    description: row.description ?? "",
+    category: row.categories?.[0] ?? "General",
+    rating: 0,
+    publishedYear: new Date(row.created_at).getFullYear(),
+    isExclusive: false,
+    favorites: 0,
+  };
 }
-
-// Swap point: replace these two functions with calls to the real books API.
-// The route handlers and UI only depend on their return shapes.
 
 export async function listCategories(): Promise<Category[]> {
-  return CATEGORIES;
+  const supabase = createPublicSupabaseClient();
+  const { data, error } = await supabase.from("books").select("categories");
+  if (error) throw error;
+  const values = [
+    ...new Set((data ?? []).flatMap((row) => row.categories ?? [])),
+  ]
+    .filter(Boolean)
+    .sort();
+  return values.map((name) => ({
+    name,
+    slug: name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, ""),
+  }));
 }
 
-const stableShuffleKey = (book: Book) =>
-  (Number(book.id.slice(-6)) * 7919) % 1009;
-
 export async function listBooks({
-  section,
   category,
   q,
   page = 1,
-  limit = 10,
+  limit = 24,
 }: BookQuery): Promise<Paginated<Book>> {
-  let books = [...BOOKS];
-
-  if (category && category !== "all") {
-    books = books.filter((book) => book.category === category);
-  }
-
-  if (q) {
-    const term = q.toLowerCase();
-    books = books.filter(
-      (book) =>
-        book.title.toLowerCase().includes(term) ||
-        book.author.toLowerCase().includes(term),
-    );
-  }
-
-  switch (section) {
-    case "latest":
-      books.sort((a, b) => b.publishedYear - a.publishedYear);
-      break;
-    case "recommended":
-      books.sort((a, b) => stableShuffleKey(a) - stableShuffleKey(b));
-      break;
-    case "exclusive":
-      books = books.filter((book) => book.isExclusive);
-      break;
-    case "highly-rated":
-      books.sort((a, b) => b.rating - a.rating);
-      break;
-    case "favorite":
-      books.sort((a, b) => b.favorites - a.favorites);
-      break;
-  }
-
-  const total = books.length;
-  const totalPages = Math.max(1, Math.ceil(total / limit));
-  const safePage = Math.min(Math.max(1, page), totalPages);
-  const start = (safePage - 1) * limit;
-
+  const supabase = createPublicSupabaseClient();
+  let query = supabase.from("books").select("*", { count: "exact" });
+  if (q) query = query.ilike("title", `%${q}%`);
+  if (category && category !== "all")
+    query = query.contains("categories", [category]);
+  const safePage = Math.max(1, page);
+  const from = (safePage - 1) * limit;
+  const { data, count, error } = await query
+    .order("created_at", { ascending: false })
+    .range(from, from + limit - 1);
+  if (error) throw error;
+  const total = count ?? 0;
   return {
-    data: books.slice(start, start + limit),
+    data: (data ?? []).map(mapBook),
     page: safePage,
     limit,
     total,
-    totalPages,
+    totalPages: Math.max(1, Math.ceil(total / limit)),
   };
+}
+
+export async function getBookById(id: string): Promise<Book | undefined> {
+  const supabase = createPublicSupabaseClient();
+  const { data, error } = await supabase
+    .from("books")
+    .select("*")
+    .or(`id.eq.${id},gutenberg_id.eq.${Number(id)}`)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapBook(data) : undefined;
+}
+export async function getChapters(bookId: string): Promise<Chapter[]> {
+  const supabase = createPublicSupabaseClient();
+  const { data, error } = await supabase
+    .from("chapters")
+    .select("id,book_id,chapter_number,title")
+    .eq("book_id", bookId)
+    .order("chapter_number");
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    bookId: row.book_id,
+    chapterNumber: row.chapter_number,
+    title: row.title,
+  }));
+}
+export async function getChapter(bookId: string, number: number) {
+  const supabase = createPublicSupabaseClient();
+  const { data, error } = await supabase
+    .from("chapters")
+    .select("id,book_id,chapter_number,title,content")
+    .eq("book_id", bookId)
+    .eq("chapter_number", number)
+    .maybeSingle();
+  if (error) throw error;
+  return data
+    ? {
+        id: data.id,
+        bookId: data.book_id,
+        chapterNumber: data.chapter_number,
+        title: data.title,
+        content: data.content,
+      }
+    : undefined;
 }

@@ -3,11 +3,11 @@ import { Globe } from "lucide-react";
 export function BrandHeader() {
   return (
     <header className="topbar">
-      <a className="brand" href="#" aria-label="BookOnline home">
+      <a className="brand" href="#" aria-label="UsePagely home">
         <span className="brand-mark" aria-hidden="true">
           <span />
         </span>
-        <span>BookOnline</span>
+        <span>UsePagely</span>
       </a>
       <button
         className="language-switcher"
