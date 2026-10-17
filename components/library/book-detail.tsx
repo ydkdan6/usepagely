@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { useState } from "react";
 import {
   ArrowLeft,
   Bookmark,
@@ -120,9 +120,12 @@ export function BookDetail({ book }: { book: Book }) {
           </dl>
 
           <div className="mt-10 flex flex-wrap items-center gap-4">
-            <button className="rounded-lg bg-[#0da4ed] px-10 py-3 text-base font-semibold text-white shadow-lg shadow-[#0da4ed]/20 transition hover:-translate-y-1 hover:bg-[#078fd2]">
+            <Link
+              href={`/library/read/${book.id}`}
+              className="rounded-lg bg-[#0da4ed] px-10 py-3 text-base font-semibold text-white shadow-lg shadow-[#0da4ed]/20 transition hover:-translate-y-1 hover:bg-[#078fd2]"
+            >
               Read
-            </button>
+            </Link>
             <ActionButton
               active={saved}
               label={saved ? "Saved" : "Save"}

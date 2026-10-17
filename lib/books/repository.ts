@@ -1,5 +1,5 @@
-import { BOOKS, CATEGORIES } from "@/lib/books/mock-data";
-import type { Book, BookQuery, Category, Paginated } from "@/lib/books/types";
+import { BOOKS, CATEGORIES } from "../books/mock-data";
+import type { Book, BookQuery, Category, Paginated } from "../books/types";
 
 export function getBookById(id: string): Book | undefined {
   return BOOKS.find((book) => book.id === id);

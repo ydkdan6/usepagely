@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookMarked, History, House, LayoutGrid } from "lucide-react";
+import { Download, History, House, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/library", label: "Home", icon: House },
-  { href: "/library/latest", label: "History", icon: History },
-  { href: "/library/favorite", label: "Saved books", icon: BookMarked },
-  { href: "/library/highly-rated", label: "Top rated", icon: LayoutGrid },
+  { href: "/library/history", label: "History", icon: History },
+  { href: "/library/downloads", label: "Downloads", icon: Download },
+  { href: "/library/profile", label: "Profile", icon: UserRound },
 ];
 
 export function AppSidebar() {
