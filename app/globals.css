@@ -425,7 +425,7 @@
   margin-bottom: 13px;
 }
 
-h1 {
+.form-content h1 {
   margin: 0;
   font-size: clamp(32px, 3vw, 43px);
   letter-spacing: -1.8px;
@@ -500,9 +500,17 @@ h1 {
   font-style: normal;
 }
 
-form {
+.form-content form {
   display: flex;
   flex-direction: column;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .field-label {
