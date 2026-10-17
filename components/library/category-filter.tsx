@@ -29,6 +29,24 @@ export function CategoryFilter() {
             className="h-9 w-24 shrink-0 animate-pulse rounded-full bg-[#1c1c26]/10"
           />
         ))
+      ) : categories.length > 4 ? (
+        <label className="flex items-center gap-2 text-sm font-medium">
+          <span className="sr-only">Filter by category</span>
+          <select
+            value={category}
+            onChange={(event) => update({ category: event.target.value })}
+            className="rounded-full border border-[#1c1c26]/20 bg-white px-4 py-2.5 text-sm"
+          >
+            <option value="all">All</option>
+            {categories
+              .filter((item) => item.slug !== "all")
+              .map((item) => (
+                <option key={item.slug} value={item.slug}>
+                  {item.name}
+                </option>
+              ))}
+          </select>
+        </label>
       ) : (
         categories.map((item) => {
           const active = category === item.slug;

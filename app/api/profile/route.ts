@@ -2,10 +2,17 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 const profileSchema = z.object({
-  username: z.string().regex(/^[a-zA-Z0-9_]{3,20}$/),
-  display_name: z.string().max(80),
-  bio: z.string().max(500),
-  avatar_url: z.string().url().optional(),
+  username: z
+    .string()
+    .trim()
+    .regex(
+      /^[a-zA-Z0-9_]{3,20}$/,
+      "Username must be 3-20 letters, numbers, or underscores",
+    ),
+  display_name: z.string().trim().max(80),
+  phone: z.string().trim().max(30),
+  bio: z.string().trim().max(500),
+  avatar_seed: z.string().min(1).max(100),
 });
 export async function GET() {
   const supabase = await createClient();
@@ -16,7 +23,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { data, error } = await supabase
     .from("profiles")
-    .select("id,username,display_name,avatar_url,bio,updated_at")
+    .select("id,username,display_name,phone,bio,avatar_seed,updated_at")
     .eq("id", user.id)
     .maybeSingle();
   return NextResponse.json(
@@ -41,7 +48,7 @@ export async function PATCH(request: Request) {
       ...parsed.data,
       updated_at: new Date().toISOString(),
     })
-    .select("id,username,display_name,avatar_url,bio,updated_at")
+    .select("id,username,display_name,phone,bio,avatar_seed,updated_at")
     .single();
   if (error?.code === "23505")
     return NextResponse.json(

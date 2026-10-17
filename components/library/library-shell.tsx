@@ -4,9 +4,24 @@ import { AppSidebar } from "@/components/library/app-sidebar";
 import { LibraryTopbar } from "@/components/library/library-topbar";
 import { LibraryFooter } from "@/components/library/library-footer";
 import { ShelfScreen, ProfileScreen } from "@/components/library/shelf-screen";
+import { useEffect } from "react";
+import { playClickSound } from "@/lib/click-sound";
 
 export function LibraryShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
+  useEffect(() => {
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as HTMLElement;
+      if (
+        target.closest("button, a, [role=button], input[type=checkbox], select")
+      ) {
+        const enabled = window.localStorage.getItem("click-sounds") !== "off";
+        playClickSound(enabled);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, []);
   const screen = path.endsWith("/history") ? (
     <ShelfScreen title="History" kind="history" />
   ) : path.endsWith("/downloads") ? (

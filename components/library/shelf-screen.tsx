@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { X, Camera, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { SoundPreferences } from "@/components/library/sound-preferences";
 
 export function ShelfScreen({
   title,
@@ -203,6 +204,7 @@ export function ProfileScreen() {
         </p>
         <h1 className="mt-2 text-4xl font-bold">My profile</h1>
       </div>
+      <SoundPreferences />
       <form onSubmit={save} className="grid gap-8 lg:grid-cols-[1fr_280px]">
         <div className="space-y-5 rounded-3xl border border-black/10 bg-white/60 p-5 sm:p-8">
           <Field label="Email" value={email} onChange={() => {}} disabled />
