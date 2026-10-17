@@ -10,6 +10,7 @@ export type Book = {
   downloadCount?: number;
   coverUrl: string;
   description?: string;
+  downloadSize?: number;
   category: string;
   rating: number;
   publishedYear: number;
@@ -22,6 +23,7 @@ export type Chapter = {
   chapterNumber: number;
   title: string;
   content?: string;
+  htmlContent?: string;
 };
 export type Category = { slug: string; name: string };
 export type SectionSlug =

@@ -86,6 +86,13 @@ export async function fetchBookText(book: GutendexBook) {
   return fetchTextWithRetry(url);
 }
 
+export async function fetchBookHtml(book: GutendexBook) {
+  const url = Object.entries(book.formats).find(
+    ([type, value]) => /text\/html/i.test(type) && !/zip/i.test(value),
+  )?.[1];
+  return url ? fetchTextWithRetry(url) : null;
+}
+
 async function fetchTextWithRetry(url: string) {
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
     const controller = new AbortController();

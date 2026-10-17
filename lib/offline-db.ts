@@ -19,7 +19,30 @@ const db = () =>
   });
 export async function saveOfflineBook(book: Book, chapters: Chapter[]) {
   const value = await db();
-  await value.put("books", { book, chapters, savedAt: Date.now() }, book.id);
+  const existing = await value.get("books", book.id);
+  const merged = new Map(
+    [...(existing?.chapters ?? []), ...chapters].map((chapter) => [
+      chapter.chapterNumber,
+      chapter,
+    ]),
+  );
+  await value.put(
+    "books",
+    {
+      book,
+      chapters: [...merged.values()].sort(
+        (a, b) => a.chapterNumber - b.chapterNumber,
+      ),
+      savedAt: Date.now(),
+    },
+    book.id,
+  );
+}
+export async function getOfflineChapter(id: string, chapterNumber: number) {
+  const cached = await getOfflineBook(id);
+  return cached?.chapters.find(
+    (chapter) => chapter.chapterNumber === chapterNumber,
+  );
 }
 export async function getOfflineBook(id: string) {
   return (await db()).get("books", id);

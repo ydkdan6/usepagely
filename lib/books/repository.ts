@@ -18,6 +18,7 @@ function mapBook(row: any): Book {
     categories: row.categories ?? [],
     language: row.language,
     downloadCount: row.download_count ?? 0,
+    downloadSize: row.download_size ?? 0,
     isExclusive: row.featured === true,
     coverUrl: row.cover_url ?? "",
     description: row.description ?? "",
@@ -133,6 +134,34 @@ export async function listChapterTitles(bookId: string, page = 1, limit = 20) {
       id: row.id,
       chapterNumber: row.chapter_number,
       title: row.title,
+    })),
+    page,
+    limit,
+    total: count ?? 0,
+    totalPages: Math.max(1, Math.ceil((count ?? 0) / limit)),
+  };
+}
+
+export async function listChapterContent(bookId: string, page = 1, limit = 50) {
+  const supabase = createPublicSupabaseClient();
+  const from = (page - 1) * limit;
+  const { data, count, error } = await supabase
+    .from("chapters")
+    .select("id,book_id,chapter_number,title,content,html_content", {
+      count: "exact",
+    })
+    .eq("book_id", bookId)
+    .order("chapter_number")
+    .range(from, from + limit - 1);
+  if (error) throw error;
+  return {
+    data: (data ?? []).map((row) => ({
+      id: row.id,
+      bookId: row.book_id,
+      chapterNumber: row.chapter_number,
+      title: row.title,
+      content: row.content,
+      htmlContent: row.html_content ?? undefined,
     })),
     page,
     limit,
