@@ -4,10 +4,21 @@ import { useEffect, useState } from "react";
 import { Bell, Search } from "lucide-react";
 import { useLibraryFilters } from "@/hooks/use-library-filters";
 import { GutenbergSearchResults } from "@/components/library/gutenberg-search-results";
+import { avatarDataUri } from "@/lib/avatar";
 
 export function LibraryTopbar() {
   const { q, update } = useLibraryFilters();
   const [value, setValue] = useState(q);
+  const [profile, setProfile] = useState<{
+    username?: string;
+    display_name?: string;
+    avatar_seed?: string;
+  }>({});
+  useEffect(() => {
+    fetch("/api/profile", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => setProfile(data.profile ?? {}));
+  }, []);
 
   useEffect(() => {
     if (value.trim() === q) return;
@@ -50,12 +61,17 @@ export function LibraryTopbar() {
 
       <div className="flex items-center gap-3">
         <img
-          src="/placeholder-user.jpg"
+          src={avatarDataUri(
+            profile.avatar_seed ||
+              profile.username ||
+              profile.display_name ||
+              "reader",
+          )}
           alt=""
           className="size-9 rounded-full object-cover ring-2 ring-[#f15a3a]/60"
         />
         <span className="hidden text-sm font-semibold text-[#1c1c26] lg:inline">
-          Harleen Quinzel
+          {profile.username || profile.display_name || "Reader"}
         </span>
       </div>
 

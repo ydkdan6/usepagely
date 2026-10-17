@@ -1,9 +1,10 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { X, Camera, LogOut } from "lucide-react";
+import { X, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { SoundPreferences } from "@/components/library/sound-preferences";
+import { avatarDataUri } from "@/lib/avatar";
 
 export function ShelfScreen({
   title,
@@ -117,8 +118,9 @@ export function ProfileScreen() {
   const [profile, setProfile] = useState({
     username: "",
     display_name: "",
+    phone: "",
     bio: "",
-    avatar_url: "",
+    avatar_seed: "",
   });
   const [email, setEmail] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -134,8 +136,9 @@ export function ProfileScreen() {
           setProfile({
             username: data.profile.username ?? "",
             display_name: data.profile.display_name ?? "",
+            phone: data.profile.phone ?? "",
             bio: data.profile.bio ?? "",
-            avatar_url: data.profile.avatar_url ?? "",
+            avatar_seed: data.profile.avatar_seed ?? "",
           });
         if (data.user?.email) setEmail(data.user.email);
       });
@@ -152,7 +155,17 @@ export function ProfileScreen() {
     });
     const data = await result.json();
     if (!result.ok) setError(data.error ?? "Could not save profile");
-    else setMessage("Profile updated");
+    else {
+      const currentUser = await supabase.auth.getUser();
+      if (currentUser.data.user?.email !== email) {
+        const emailResult = await supabase.auth.updateUser({ email });
+        if (emailResult.error) setError(emailResult.error.message);
+        else
+          setMessage(
+            "Profile updated. Check your email to confirm the new address.",
+          );
+      } else setMessage("Profile updated");
+    }
     if (newPassword) {
       if (!currentPassword)
         setError("Enter your current password to change it.");
@@ -172,30 +185,6 @@ export function ProfileScreen() {
     }
     setSaving(false);
   }
-  async function upload(file: File) {
-    if (
-      !/^image\/(jpeg|png|webp)$/.test(file.type) ||
-      file.size > 2 * 1024 * 1024
-    ) {
-      setError("Avatar must be JPG, PNG, or WEBP and no larger than 2MB.");
-      return;
-    }
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
-    const path = `${user.id}/avatar-${Date.now()}.${file.type.split("/")[1]}`;
-    const result = await supabase.storage
-      .from("avatars")
-      .upload(path, file, { upsert: true, contentType: file.type });
-    if (result.error) {
-      setError(result.error.message);
-      return;
-    }
-    const url = supabase.storage.from("avatars").getPublicUrl(path)
-      .data.publicUrl;
-    setProfile((current) => ({ ...current, avatar_url: url }));
-  }
   return (
     <div className="space-y-8">
       <div>
@@ -207,18 +196,23 @@ export function ProfileScreen() {
       <SoundPreferences />
       <form onSubmit={save} className="grid gap-8 lg:grid-cols-[1fr_280px]">
         <div className="space-y-5 rounded-3xl border border-black/10 bg-white/60 p-5 sm:p-8">
-          <Field label="Email" value={email} onChange={() => {}} disabled />
+          <Field label="Email" value={email} onChange={setEmail} type="email" />
           <Field
             label="Username"
             value={profile.username}
             onChange={(value) => setProfile({ ...profile, username: value })}
           />
           <Field
-            label="Display name"
+            label="Full name"
             value={profile.display_name}
             onChange={(value) =>
               setProfile({ ...profile, display_name: value })
             }
+          />
+          <Field
+            label="Phone"
+            value={profile.phone}
+            onChange={(value) => setProfile({ ...profile, phone: value })}
           />
           <label className="block rounded-2xl border-2 border-black/15 px-5 py-3">
             <span className="block font-semibold">Bio</span>
@@ -257,23 +251,24 @@ export function ProfileScreen() {
         </div>
         <div className="flex flex-col items-center rounded-3xl border border-black/10 bg-white/60 p-8">
           <img
-            src={
-              profile.avatar_url ||
-              "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&q=80"
-            }
+            src={avatarDataUri(
+              profile.avatar_seed || profile.username || profile.display_name,
+            )}
             alt="Profile avatar"
             className="size-44 rounded-full object-cover shadow-xl"
           />
-          <label className="mt-6 cursor-pointer rounded-xl bg-[#109fe9] px-6 py-3 font-semibold text-white">
-            <Camera className="mr-2 inline size-4" />
-            Change photo
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="sr-only"
-              onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
-            />
-          </label>
+          <button
+            type="button"
+            className="mt-6 rounded-xl bg-[#109fe9] px-6 py-3 font-semibold text-white"
+            onClick={() =>
+              setProfile((current) => ({
+                ...current,
+                avatar_seed: crypto.randomUUID(),
+              }))
+            }
+          >
+            Shuffle avatar
+          </button>
           <button
             type="button"
             onClick={() =>
