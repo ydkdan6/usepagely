@@ -1,15 +1,17 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { SectionGrid } from "../../../../components/library/section-grid";
-import { getSection } from "./../../../../lib/books/sections";
+import { BookDetail } from "@/components/library/book-detail";
+import { getBookById } from "@/lib/books/repository";
 
-export default async function SectionPage({
+export default async function BookPage({
   params,
 }: {
-  params: Promise<{ section: string }>;
+  params: Promise<{ id: string }>;
 }) {
-  const { section: slug } = await params;
-  const section = getSection(slug);
-  if (!section) notFound();
+  const { id } = await params;
+  const book = await getBookById(id);
 
-  return <SectionGrid slug={section.slug} title={section.title} />;
+  if (!book) notFound();
+
+  return <BookDetail book={book} />;
 }

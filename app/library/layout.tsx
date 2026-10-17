@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LibraryShell } from "@/components/library/library-shell";
 
 export const metadata: Metadata = {
-  title: "Library — BookOnline",
+  title: "Library — UsePagely",
   description: "Browse the latest, recommended, exclusive and top-rated books.",
 };
 

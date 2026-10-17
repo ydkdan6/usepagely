@@ -8,7 +8,7 @@ export default async function ReadPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const book = getBookById(id);
+  const book = await getBookById(id);
   if (!book) notFound();
   return <Reader book={book} />;
 }
