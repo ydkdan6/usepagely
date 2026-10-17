@@ -18,7 +18,7 @@ export function SectionGrid({
   title: string;
 }) {
   const { category, q, page, update, buildHref } = useLibraryFilters();
-  const { data, isLoading, error } = useBooks({
+  const { data, isLoading, error, mutate } = useBooks({
     section: slug,
     category,
     q,
@@ -50,9 +50,12 @@ export function SectionGrid({
       </div>
 
       {error ? (
-        <p className="text-sm text-[#1c1c26]/70">
-          Couldn&apos;t load books. Please try again.
-        </p>
+        <div className="flex items-center gap-3 text-sm text-[#1c1c26]/70">
+          <p>Couldn&apos;t load books. Please try again.</p>
+          <button type="button" className="underline" onClick={() => mutate()}>
+            Retry
+          </button>
+        </div>
       ) : data && data.total === 0 ? (
         <p className="rounded-md border border-dashed border-[#1c1c26]/20 px-4 py-16 text-center text-sm text-[#1c1c26]/70">
           No books are available yet. Import a Gutenberg book to start your
