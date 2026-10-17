@@ -1,17 +1,9 @@
 "use client";
-
 import Link from "next/link";
-import {
-  X,
-  Clock3,
-  Download,
-  Heart,
-  UserRound,
-  CalendarDays,
-  Camera,
-  LogOut,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, Camera, LogOut } from "lucide-react";
 import type { Book } from "@/lib/books/types";
+import { createClient } from "@/lib/supabase/client";
 
 export function ShelfScreen({
   title,
@@ -50,36 +42,17 @@ export function ShelfScreen({
               <div>
                 <h2 className="text-2xl font-bold">{book.title}</h2>
                 <p className="mt-1 text-black/55">{book.author}</p>
-                <div className="mt-5 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
-                  <span>
-                    <b className="block">Genre</b>
-                    {book.category}
-                  </span>
-                  <span>
-                    <b className="block">Rating</b>★ {book.rating}
-                  </span>
-                  <span>
-                    <b className="block">Status</b>
-                    {kind === "downloads" ? "Downloaded" : "Reading"}
-                  </span>
-                  <span>
-                    <b className="block">Progress</b>
-                    {kind === "history"
-                      ? `${Math.min(95, 25 + i * 20)}%`
-                      : "Ready"}
-                  </span>
-                </div>
               </div>
               <div className="mt-5 flex items-center justify-between gap-3">
                 <Link
                   href={`/library/read/${book.id}`}
-                  className="rounded-xl bg-[#109fe9] px-6 py-3 text-center font-semibold text-white transition hover:scale-[1.03]"
+                  className="rounded-xl bg-[#109fe9] px-6 py-3 text-center font-semibold text-white"
                 >
                   {kind === "history" ? "Continue reading" : "Read book"}
                 </Link>
                 <button
                   aria-label={`Remove ${book.title}`}
-                  className="rounded-xl p-3 text-black/55 transition hover:bg-[#ff6868]/10 hover:text-[#ff6868]"
+                  className="rounded-xl p-3"
                 >
                   <X className="size-5" />
                 </button>
@@ -93,6 +66,89 @@ export function ShelfScreen({
 }
 
 export function ProfileScreen() {
+  const supabase = createClient();
+  const [profile, setProfile] = useState({
+    username: "",
+    display_name: "",
+    bio: "",
+    avatar_url: "",
+  });
+  const [email, setEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    fetch("/api/profile")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.profile)
+          setProfile({
+            username: data.profile.username ?? "",
+            display_name: data.profile.display_name ?? "",
+            bio: data.profile.bio ?? "",
+            avatar_url: data.profile.avatar_url ?? "",
+          });
+        if (data.user?.email) setEmail(data.user.email);
+      });
+  }, []);
+  async function save(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
+    setMessage("");
+    const result = await fetch("/api/profile", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(profile),
+    });
+    const data = await result.json();
+    if (!result.ok) setError(data.error ?? "Could not save profile");
+    else setMessage("Profile updated");
+    if (newPassword) {
+      if (!currentPassword)
+        setError("Enter your current password to change it.");
+      else {
+        const auth = await supabase.auth.signInWithPassword({
+          email,
+          password: currentPassword,
+        });
+        if (auth.error) setError("Current password is incorrect.");
+        else {
+          const updated = await supabase.auth.updateUser({
+            password: newPassword,
+          });
+          if (updated.error) setError(updated.error.message);
+        }
+      }
+    }
+    setSaving(false);
+  }
+  async function upload(file: File) {
+    if (
+      !/^image\/(jpeg|png|webp)$/.test(file.type) ||
+      file.size > 2 * 1024 * 1024
+    ) {
+      setError("Avatar must be JPG, PNG, or WEBP and no larger than 2MB.");
+      return;
+    }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+    const path = `${user.id}/avatar-${Date.now()}.${file.type.split("/")[1]}`;
+    const result = await supabase.storage
+      .from("avatars")
+      .upload(path, file, { upsert: true, contentType: file.type });
+    if (result.error) {
+      setError(result.error.message);
+      return;
+    }
+    const url = supabase.storage.from("avatars").getPublicUrl(path)
+      .data.publicUrl;
+    setProfile((current) => ({ ...current, avatar_url: url }));
+  }
   return (
     <div className="space-y-8">
       <div>
@@ -101,56 +157,111 @@ export function ProfileScreen() {
         </p>
         <h1 className="mt-2 text-4xl font-bold">My profile</h1>
       </div>
-      <div className="grid gap-8 lg:grid-cols-[1fr_280px]">
-        <form className="space-y-5 rounded-3xl border border-black/10 bg-white/60 p-5 sm:p-8">
-          <Field label="Email" value="alma.lawson@example.com" />
-          <Field label="Password" value="0000000000" type="password" />
-          <Field label="Full name" value="Harleen Quinzel" />
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Date of birth" value="01/01/1900" />
-            <Field label="Gender" value="Female" />
-          </div>
+      <form onSubmit={save} className="grid gap-8 lg:grid-cols-[1fr_280px]">
+        <div className="space-y-5 rounded-3xl border border-black/10 bg-white/60 p-5 sm:p-8">
+          <Field label="Email" value={email} onChange={() => {}} disabled />
+          <Field
+            label="Username"
+            value={profile.username}
+            onChange={(value) => setProfile({ ...profile, username: value })}
+          />
+          <Field
+            label="Display name"
+            value={profile.display_name}
+            onChange={(value) =>
+              setProfile({ ...profile, display_name: value })
+            }
+          />
+          <label className="block rounded-2xl border-2 border-black/15 px-5 py-3">
+            <span className="block font-semibold">Bio</span>
+            <textarea
+              value={profile.bio}
+              onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+              className="w-full bg-transparent outline-none"
+              rows={3}
+            />
+          </label>
+          <Field
+            label="Current password"
+            type="password"
+            value={currentPassword}
+            onChange={setCurrentPassword}
+          />
+          <Field
+            label="New password"
+            type="password"
+            value={newPassword}
+            onChange={setNewPassword}
+          />
+          {error && (
+            <p role="alert" className="text-sm text-red-600">
+              {error}
+            </p>
+          )}
+          {message && <p className="text-sm text-green-700">{message}</p>}
           <button
-            type="button"
-            className="rounded-xl bg-[#109fe9] px-8 py-3 font-semibold text-white transition hover:scale-[1.03]"
+            type="submit"
+            disabled={saving}
+            className="rounded-xl bg-[#109fe9] px-8 py-3 font-semibold text-white"
           >
-            Confirm changes
+            {saving ? "Saving..." : "Confirm changes"}
           </button>
-        </form>
+        </div>
         <div className="flex flex-col items-center rounded-3xl border border-black/10 bg-white/60 p-8">
           <img
-            src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&q=80"
+            src={
+              profile.avatar_url ||
+              "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&q=80"
+            }
             alt="Profile avatar"
             className="size-44 rounded-full object-cover shadow-xl"
           />
-          <button className="mt-6 rounded-xl bg-[#109fe9] px-6 py-3 font-semibold text-white">
+          <label className="mt-6 cursor-pointer rounded-xl bg-[#109fe9] px-6 py-3 font-semibold text-white">
             <Camera className="mr-2 inline size-4" />
             Change photo
-          </button>
-          <button className="mt-3 rounded-xl px-6 py-3 font-semibold text-[#ff6868] hover:bg-[#ff6868]/10">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="sr-only"
+              onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
+            />
+          </label>
+          <button
+            type="button"
+            onClick={() =>
+              supabase.auth.signOut().then(() => location.assign("/"))
+            }
+            className="mt-3 rounded-xl px-6 py-3 font-semibold text-[#ff6868]"
+          >
             <LogOut className="mr-2 inline size-4" />
             Log out
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
 function Field({
   label,
   value,
+  onChange,
   type = "text",
+  disabled = false,
 }: {
   label: string;
   value: string;
+  onChange: (value: string) => void;
   type?: string;
+  disabled?: boolean;
 }) {
   return (
     <label className="block rounded-2xl border-2 border-black/15 px-5 py-3 focus-within:border-[#109fe9]">
       <span className="block font-semibold">{label}</span>
       <input
         type={type}
-        defaultValue={value}
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.value)}
         className="w-full bg-transparent outline-none"
       />
     </label>

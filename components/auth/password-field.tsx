@@ -21,7 +21,9 @@ export function PasswordField({ id, label, autoComplete }: PasswordFieldProps) {
         <LockKeyhole aria-hidden="true" />
         <input
           id={id}
+          name={id}
           type={visible ? "text" : "password"}
+          required
           autoComplete={autoComplete}
         />
         <button

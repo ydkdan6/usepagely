@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { signIn } from "@/lib/auth/actions";
 import { useRouter } from "next/navigation";
 import { Apple, LockKeyhole, Mail } from "lucide-react";
 import { PasswordField } from "@/components/auth/password-field";
@@ -16,6 +17,8 @@ export function LoginForm({
 }: LoginFormProps) {
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   return (
     <div className="form-content">
@@ -39,9 +42,30 @@ export function LoginForm({
         <em>Or</em>
         <span />
       </div>
+      {error && (
+        <p role="alert" className="text-sm text-red-600">
+          {error}
+        </p>
+      )}
       <form
-        onSubmit={(event) => {
+        onSubmit={async (event) => {
           event.preventDefault();
+          setLoading(true);
+          setError("");
+          const form = new FormData(event.currentTarget);
+          const { error } = await signIn({
+            email: form.get("email"),
+            password: form.get("password"),
+          });
+          if (error) {
+            setError(
+              error.message.includes("Email not confirmed")
+                ? "Please confirm your email first."
+                : "Invalid email or password.",
+            );
+            setLoading(false);
+            return;
+          }
           router.push("/library");
         }}
       >
@@ -50,7 +74,13 @@ export function LoginForm({
         </label>
         <div className="input-wrap">
           <Mail aria-hidden="true" />
-          <input id="email" type="email" autoComplete="email" />
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+          />
         </div>
         <PasswordField
           id="password"
@@ -76,8 +106,8 @@ export function LoginForm({
             Forgot password?
           </a>
         </div>
-        <button className="login-button" type="submit">
-          Log in
+        <button className="login-button" type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Log in"}
         </button>
       </form>
       <p className="signup-prompt">

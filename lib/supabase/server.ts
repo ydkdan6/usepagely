@@ -1,24 +1,37 @@
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-function getUrl() {
-  const value = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!value) throw new Error("NEXT_PUBLIC_SUPABASE_URL is not configured");
-  return value;
-}
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 export function createPublicSupabaseClient() {
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!key)
-    throw new Error("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is not configured");
-  return createClient(getUrl(), key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+  );
+}
+export function createServiceSupabaseClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
 }
 
-export function createServiceSupabaseClient() {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured");
-  return createClient(getUrl(), key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+export async function createClient() {
+  const cookieStore = await cookies();
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll: () => cookieStore.getAll(),
+        setAll: (cookiesToSet) => {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options),
+            );
+          } catch {}
+        },
+      },
+    },
+  );
 }
