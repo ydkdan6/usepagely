@@ -9,11 +9,15 @@ import {
   Settings2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { Book, Chapter } from "@/lib/books/types";
 import { getOfflineBook, saveProgress } from "@/lib/offline-db";
 
 export function Reader({ book }: { book: Book }) {
-  const [chapter, setChapter] = useState(1);
+  const searchParams = useSearchParams();
+  const [chapter, setChapter] = useState(
+    Number(searchParams.get("chapter") ?? 1),
+  );
   const [bookmarked, setBookmarked] = useState(false);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [offline, setOffline] = useState(false);
@@ -29,9 +33,28 @@ export function Reader({ book }: { book: Book }) {
         return;
       }
       try {
-        const response = await fetch(`/api/books/${book.id}`);
+        const [response, listResponse] = await Promise.all([
+          fetch(`/api/books/${book.id}?chapter=${chapter}`),
+          fetch(`/api/books/${book.id}/chapters?page=1`),
+        ]);
         const data = await response.json();
-        if (!cancelled) setChapters(data.chapters ?? []);
+        const list = await listResponse.json();
+        if (!cancelled)
+          setChapters((current) => {
+            const next = [
+              ...(list.data ?? []),
+              ...(data.chapter ? [data.chapter] : []),
+            ];
+            return next
+              .filter(
+                (item, index, all) =>
+                  all.findIndex(
+                    (candidate) =>
+                      candidate.chapterNumber === item.chapterNumber,
+                  ) === index,
+              )
+              .sort((a, b) => a.chapterNumber - b.chapterNumber);
+          });
       } catch {
         if (cached && !cancelled) {
           setChapters(cached.chapters);

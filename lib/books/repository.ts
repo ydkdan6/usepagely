@@ -118,6 +118,29 @@ export async function getChapters(bookId: string): Promise<Chapter[]> {
     title: row.title,
   }));
 }
+export async function listChapterTitles(bookId: string, page = 1, limit = 20) {
+  const supabase = createPublicSupabaseClient();
+  const from = (page - 1) * limit;
+  const { data, count, error } = await supabase
+    .from("chapters")
+    .select("id,chapter_number,title", { count: "exact" })
+    .eq("book_id", bookId)
+    .order("chapter_number")
+    .range(from, from + limit - 1);
+  if (error) throw error;
+  return {
+    data: (data ?? []).map((row) => ({
+      id: row.id,
+      chapterNumber: row.chapter_number,
+      title: row.title,
+    })),
+    page,
+    limit,
+    total: count ?? 0,
+    totalPages: Math.max(1, Math.ceil((count ?? 0) / limit)),
+  };
+}
+
 export async function getChapter(bookId: string, number: number) {
   const supabase = createPublicSupabaseClient();
   const { data, error } = await supabase

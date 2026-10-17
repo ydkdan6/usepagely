@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   Bookmark,
@@ -15,18 +15,7 @@ import {
 import type { Book } from "@/lib/books/types";
 import { cn } from "@/lib/utils";
 import { saveOfflineBook, removeOfflineBook } from "@/lib/offline-db";
-
-const descriptions: Record<string, string> = {
-  "101 cách của đồ đại lão hàng xóm":
-    "Tống Thiên Thi nhận ra hàng xóm mới chuyển đến là một người không dễ sống chung. Anh lạnh lùng, sắc bén và dường như luôn nhìn thấu mọi bí mật. Nhưng qua những cuộc gặp gỡ bất ngờ, khoảng cách giữa hai người dần được kéo gần lại bằng những rung động không ai kịp phòng bị.",
-};
-
-function getDescription(book: Book) {
-  return (
-    descriptions[book.title] ??
-    `${book.title} là một tác phẩm của ${book.author}, mang đến một hành trình đáng nhớ qua những nhân vật, lựa chọn và cảm xúc sâu sắc. Khám phá câu chuyện đầy cuốn hút và tìm thấy những điều mới mẻ trên từng trang sách.`
-  );
-}
+import { ChapterList } from "@/components/library/chapter-list";
 
 export function BookDetail({ book }: { book: Book }) {
   const [expanded, setExpanded] = useState(false);
@@ -61,7 +50,8 @@ export function BookDetail({ book }: { book: Book }) {
       setOfflineBusy(false);
     }
   }
-  const description = getDescription(book);
+  const description =
+    book.description?.trim() || "No description is available for this book.";
 
   async function shareBook() {
     const shareData = {
@@ -206,6 +196,8 @@ export function BookDetail({ book }: { book: Book }) {
               {expanded ? "Show less" : "View more"}
             </button>
           </div>
+
+          <ChapterList bookId={book.id} />
 
           <section className="mt-12" aria-labelledby="reviews-heading">
             <h2 id="reviews-heading" className="mb-5 text-2xl font-semibold">

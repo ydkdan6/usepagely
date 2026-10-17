@@ -21,7 +21,7 @@ export function LibraryShell({ children }: { children: React.ReactNode }) {
       <AppSidebar />
       <div className="min-w-0 flex-1">
         <LibraryTopbar />
-        <main className="mx-auto max-w-7xl px-5 py-8 md:px-10 lg:py-14">
+        <main className="mx-auto max-w-7xl px-5 pb-24 pt-8 md:px-10 md:pb-8 lg:py-14">
           {screen}
         </main>
         <LibraryFooter />

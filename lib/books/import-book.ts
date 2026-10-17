@@ -3,28 +3,39 @@ import { createServiceSupabaseClient } from "@/lib/supabase/server";
 import { fetchBookText, getGutendexBook } from "@/lib/gutendex";
 import { z } from "zod";
 import { bookCategories } from "@/lib/books/catalog";
+import { resolveEnglishDescription } from "@/lib/books/descriptions";
 export const importSchema = z.object({
   gutenberg_id: z.coerce.number().int().positive(),
 });
-function splitText(raw: string) {
+export function splitText(raw: string) {
   const text = raw
     .replace(/\\r/g, "")
     .replace(/^[\\s\\S]*?\\*\\*\\* START OF[^\\n]*\\n/i, "")
     .replace(/\\n\\*\\*\\* END OF[\\s\\S]*$/i, "")
     .trim();
   if (!text) throw new Error("Book text is empty");
-  const matches = [
-    ...text.matchAll(/(?:^|\\n)\\s*(CHAPTER\\s+(?:[IVXLCDM]+|\\d+)[^\\n]*)/gi),
-  ];
-  if (!matches.length) {
-    const chunks = text.match(/[\s\S]{1,5000}/g) ?? [];
+  const heading =
+    /(?:^|\\n)\\s*((?:(?:CHAPTER|BOOK|PART|LETTER|STAVE)\\s+[A-Z0-9IVXLCDM][^\\n]*)|(?:CHAPTER|BOOK|PART|LETTER|STAVE)\\s*[^\\n]*)/gi;
+  const matches = [...text.matchAll(heading)];
+  if (matches.length < 2) {
+    const chunks: string[] = [];
+    let remaining = text;
+    while (remaining.length) {
+      let end = Math.min(5000, remaining.length);
+      if (end < remaining.length) {
+        const boundary = remaining.lastIndexOf("\\n\\n", end);
+        if (boundary > 1000) end = boundary;
+      }
+      chunks.push(remaining.slice(0, end).trim());
+      remaining = remaining.slice(end).trim();
+    }
     return chunks
+      .filter(Boolean)
       .map((content, i) => ({
         chapterNumber: i + 1,
         title: `Part ${i + 1}`,
-        content: content.trim(),
-      }))
-      .filter((chapter) => chapter.content);
+        content,
+      }));
   }
   return matches
     .map((match, i) => ({
@@ -90,8 +101,7 @@ export async function importBook(input: unknown) {
         cover_url: book.formats["image/jpeg"] ?? null,
         categories: bookCategories(book.subjects ?? [], book.bookshelves ?? []),
         download_count: book.download_count ?? 0,
-        description:
-          book.summaries?.[0] ?? (await openLibraryDescription(book)),
+        description: await resolveEnglishDescription(book),
       },
       { onConflict: "gutenberg_id" },
     )
