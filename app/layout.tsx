@@ -10,9 +10,9 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "BookOnline — Your reading journey",
+  title: "UsePagely — Your reading journey",
   description:
-    "Log in to BookOnline and continue reading stories worth staying for.",
+    "Log in to UsePagely and continue reading stories worth staying for.",
   generator: "v0.app",
   icons: {
     icon: [
