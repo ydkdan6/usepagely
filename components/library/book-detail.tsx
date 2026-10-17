@@ -43,11 +43,18 @@ export function BookDetail({ book }: { book: Book }) {
     try {
       if (downloaded) {
         await removeOfflineBook(book.id);
+        await fetch(`/api/downloads/${book.id}`, { method: "DELETE" });
         setDownloaded(false);
       } else {
         const response = await fetch(`/api/books/${book.id}`);
         const data = await response.json();
         await saveOfflineBook(book, data.chapters ?? []);
+        const saved = await fetch("/api/downloads", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ bookId: book.id }),
+        });
+        if (!saved.ok) throw new Error("Could not save download");
         setDownloaded(true);
       }
     } finally {

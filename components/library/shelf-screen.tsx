@@ -2,18 +2,41 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { X, Camera, LogOut } from "lucide-react";
-import type { Book } from "@/lib/books/types";
 import { createClient } from "@/lib/supabase/client";
 
 export function ShelfScreen({
   title,
-  books,
   kind,
 }: {
   title: string;
-  books: Book[];
   kind: "history" | "downloads";
 }) {
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loggedOut, setLoggedOut] = useState(false);
+  async function load() {
+    setLoading(true);
+    const response = await fetch(
+      kind === "history" ? "/api/history" : "/api/downloads",
+      { cache: "no-store" },
+    );
+    if (response.status === 401) setLoggedOut(true);
+    else {
+      const data = await response.json();
+      setRows(data.data ?? []);
+    }
+    setLoading(false);
+  }
+  useEffect(() => {
+    void load();
+  }, [kind]);
+  async function remove(bookId: string) {
+    await fetch(
+      `/${kind === "history" ? "api/history" : "api/downloads"}/${bookId}`,
+      { method: "DELETE" },
+    );
+    setRows((current) => current.filter((row) => row.book_id !== bookId));
+  }
   return (
     <div className="space-y-8">
       <div>
@@ -27,40 +50,63 @@ export function ShelfScreen({
             : "Books saved for offline reading."}
         </p>
       </div>
-      <div className="space-y-5">
-        {books.map((book, i) => (
-          <article
-            key={book.id}
-            className="group flex flex-col gap-5 rounded-3xl border border-black/10 bg-white/60 p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:flex-row sm:p-6"
-          >
-            <img
-              src={book.coverUrl}
-              alt={`${book.title} cover`}
-              className="h-56 w-36 rounded-xl object-cover shadow-lg sm:h-48 sm:w-32"
-            />
-            <div className="flex min-w-0 flex-1 flex-col justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">{book.title}</h2>
-                <p className="mt-1 text-black/55">{book.author}</p>
-              </div>
-              <div className="mt-5 flex items-center justify-between gap-3">
-                <Link
-                  href={`/library/read/${book.id}`}
-                  className="rounded-xl bg-[#109fe9] px-6 py-3 text-center font-semibold text-white"
-                >
-                  {kind === "history" ? "Continue reading" : "Read book"}
-                </Link>
-                <button
-                  aria-label={`Remove ${book.title}`}
-                  className="rounded-xl p-3"
-                >
-                  <X className="size-5" />
-                </button>
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
+      {loggedOut ? (
+        <p className="rounded-3xl border border-black/10 bg-white/60 p-10 text-center">
+          Log in to see your{" "}
+          {kind === "history" ? "reading history" : "downloads"}.
+        </p>
+      ) : loading ? (
+        <p className="rounded-3xl border border-black/10 bg-white/60 p-10 text-center">
+          Loading...
+        </p>
+      ) : rows.length === 0 ? (
+        <p className="rounded-3xl border border-black/10 bg-white/60 p-10 text-center">
+          {kind === "history"
+            ? "No reading history yet"
+            : "No downloaded books yet"}
+        </p>
+      ) : (
+        <div className="space-y-5">
+          {rows.map((row) => {
+            const book = row.books;
+            return (
+              <article
+                key={row.book_id}
+                className="group flex flex-col gap-5 rounded-3xl border border-black/10 bg-white/60 p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:flex-row sm:p-6"
+              >
+                <img
+                  src={book.cover_url}
+                  alt={`${book.title} cover`}
+                  className="h-56 w-36 rounded-xl object-cover shadow-lg sm:h-48 sm:w-32"
+                />
+                <div className="flex min-w-0 flex-1 flex-col justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">{book.title}</h2>
+                    <p className="mt-1 text-black/55">
+                      {book.authors?.[0] ?? "Unknown author"}
+                    </p>
+                  </div>
+                  <div className="mt-5 flex items-center justify-between gap-3">
+                    <Link
+                      href={`/library/read/${book.id}`}
+                      className="rounded-xl bg-[#109fe9] px-6 py-3 text-center font-semibold text-white"
+                    >
+                      {kind === "history" ? "Continue reading" : "Read book"}
+                    </Link>
+                    <button
+                      aria-label={`Remove ${book.title}`}
+                      onClick={() => remove(row.book_id)}
+                      className="rounded-xl p-3"
+                    >
+                      <X className="size-5" />
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

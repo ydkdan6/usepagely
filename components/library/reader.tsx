@@ -50,7 +50,45 @@ export function Reader({ book }: { book: Book }) {
     [chapters, chapter],
   );
   useEffect(() => {
+    const progress = chapters.length
+      ? ((chapter - 1) / chapters.length) * 100
+      : 0;
     void saveProgress(book.id, chapter);
+    void fetch("/api/history", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ bookId: book.id, chapter, progress }),
+    });
+  }, [book.id, chapter, chapters.length]);
+  useEffect(() => {
+    let timer: number | undefined;
+    const onScroll = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        const progress = Math.min(
+          100,
+          Math.max(
+            0,
+            (window.scrollY /
+              Math.max(
+                1,
+                document.documentElement.scrollHeight - window.innerHeight,
+              )) *
+              100,
+          ),
+        );
+        void fetch("/api/history", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ bookId: book.id, chapter, progress }),
+        });
+      }, 5000);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.clearTimeout(timer);
+    };
   }, [book.id, chapter]);
   return (
     <main className="min-h-svh bg-[#f7f6f2] text-[#1c1c26]">

@@ -9,7 +9,13 @@ export default async function BookPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const book = await getBookById(id);
+  let book;
+  try {
+    book = await getBookById(id);
+  } catch (error) {
+    console.error("[v0] Book detail lookup failed", { id, error });
+    notFound();
+  }
 
   if (!book) notFound();
 

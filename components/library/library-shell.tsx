@@ -3,19 +3,14 @@ import { usePathname } from "next/navigation";
 import { AppSidebar } from "@/components/library/app-sidebar";
 import { LibraryTopbar } from "@/components/library/library-topbar";
 import { LibraryFooter } from "@/components/library/library-footer";
-import { BOOKS } from "@/lib/books/mock-data";
 import { ShelfScreen, ProfileScreen } from "@/components/library/shelf-screen";
 
 export function LibraryShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const screen = path.endsWith("/history") ? (
-    <ShelfScreen title="History" kind="history" books={BOOKS.slice(0, 4)} />
+    <ShelfScreen title="History" kind="history" />
   ) : path.endsWith("/downloads") ? (
-    <ShelfScreen
-      title="Downloaded books"
-      kind="downloads"
-      books={BOOKS.slice(4, 8)}
-    />
+    <ShelfScreen title="Downloaded books" kind="downloads" />
   ) : path.endsWith("/profile") ? (
     <ProfileScreen />
   ) : (
