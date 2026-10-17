@@ -1,0 +1,15 @@
+import type { MetadataRoute } from "next";
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: "UsePagely",
+    short_name: "UsePagely",
+    description: "Read books anywhere",
+    start_url: "/library",
+    display: "standalone",
+    background_color: "#f1eee4",
+    theme_color: "#f1eee4",
+    icons: [
+      { src: "/icon-light-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+  };
+}
