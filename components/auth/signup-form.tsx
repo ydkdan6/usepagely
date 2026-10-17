@@ -1,15 +1,23 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Mail, Phone, UserRound, AtSign } from "lucide-react";
 import { PasswordField } from "@/components/auth/password-field";
 
 export function SignupForm() {
+  const router = useRouter();
+
   return (
     <div className="form-content">
       <div className="eyebrow">GET STARTED</div>
       <h1 id="auth-title">Registration</h1>
       <p className="subheading">Come on and create an account</p>
-      <form onSubmit={(event) => event.preventDefault()}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          router.push("/library");
+        }}
+      >
         <label className="field-label" htmlFor="full-name">
           Full name
         </label>

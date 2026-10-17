@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Apple, LockKeyhole, Mail } from "lucide-react";
 import { PasswordField } from "@/components/auth/password-field";
 
@@ -14,6 +15,7 @@ export function LoginForm({
   onForgotPassword,
 }: LoginFormProps) {
   const [rememberMe, setRememberMe] = useState(false);
+  const router = useRouter();
 
   return (
     <div className="form-content">
@@ -37,7 +39,12 @@ export function LoginForm({
         <em>Or</em>
         <span />
       </div>
-      <form onSubmit={(event) => event.preventDefault()}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          router.push("/library");
+        }}
+      >
         <label className="field-label" htmlFor="email">
           Email
         </label>
