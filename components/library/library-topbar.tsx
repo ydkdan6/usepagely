@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Bell, Search } from "lucide-react";
 import { useLibraryFilters } from "@/hooks/use-library-filters";
+import { GutenbergSearchResults } from "@/components/library/gutenberg-search-results";
 
 export function LibraryTopbar() {
   const { q, update } = useLibraryFilters();
@@ -15,7 +16,7 @@ export function LibraryTopbar() {
   }, [value, q, update]);
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-[#1c1c26]/10 bg-[#f1eee4]/95 px-4 py-4 backdrop-blur md:px-8">
+    <header className="relative sticky top-0 z-20 flex items-center gap-4 border-b border-[#1c1c26]/10 bg-[#f1eee4]/95 px-4 py-4 backdrop-blur md:px-8">
       <form
         role="search"
         className="flex min-w-0 flex-1 items-center gap-3"
@@ -37,6 +38,7 @@ export function LibraryTopbar() {
           className="w-full min-w-0 max-w-md bg-transparent text-sm text-[#1c1c26] outline-none placeholder:text-[#1c1c26]/60"
         />
       </form>
+      <GutenbergSearchResults query={value.trim()} />
 
       <button
         type="button"
