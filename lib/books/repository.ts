@@ -1,6 +1,10 @@
 import { BOOKS, CATEGORIES } from "@/lib/books/mock-data";
 import type { Book, BookQuery, Category, Paginated } from "@/lib/books/types";
 
+export function getBookById(id: string): Book | undefined {
+  return BOOKS.find((book) => book.id === id);
+}
+
 // Swap point: replace these two functions with calls to the real books API.
 // The route handlers and UI only depend on their return shapes.
 

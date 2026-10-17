@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { BookOpen } from "lucide-react";
 import type { Book } from "@/lib/books/types";
@@ -16,7 +17,10 @@ export function BookCard({
 
   return (
     <article className={cn("group flex flex-col", className)}>
-      <a href="#" className="flex flex-col gap-3 rounded-md outline-offset-4">
+      <Link
+        href={`/library/book/${book.id}`}
+        className="flex flex-col gap-3 rounded-md outline-offset-4"
+      >
         <div className="relative aspect-[2/3] w-full overflow-hidden rounded-md bg-[#e4dfd0] shadow-sm transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
           {failed ? (
             <div className="flex h-full flex-col items-center justify-center gap-2 p-3 text-center text-[#1c1c26]/70">
@@ -46,7 +50,7 @@ export function BookCard({
           </h3>
           <p className="truncate text-xs text-[#1c1c26]/70">{book.author}</p>
         </div>
-      </a>
+      </Link>
     </article>
   );
 }
