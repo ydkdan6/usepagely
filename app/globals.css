@@ -384,6 +384,14 @@
   background: #fff;
 }
 
+.forgot-description {
+  max-width: 430px;
+}
+
+.recovery-back {
+  margin-top: 28px;
+}
+
 .form-content {
   width: min(100%, 500px);
   animation: reveal .8s cubic-bezier(.2, .8, .2, 1) both;

@@ -4,9 +4,15 @@ import { useState } from "react";
 import { Apple, LockKeyhole, Mail } from "lucide-react";
 import { PasswordField } from "@/components/auth/password-field";
 
-type LoginFormProps = { onCreateAccount: () => void };
+type LoginFormProps = {
+  onCreateAccount: () => void;
+  onForgotPassword: () => void;
+};
 
-export function LoginForm({ onCreateAccount }: LoginFormProps) {
+export function LoginForm({
+  onCreateAccount,
+  onForgotPassword,
+}: LoginFormProps) {
   const [rememberMe, setRememberMe] = useState(false);
 
   return (
@@ -53,7 +59,15 @@ export function LoginForm({ onCreateAccount }: LoginFormProps) {
             />
             <span>Stay signed in</span>
           </label>
-          <a href="#forgot">Forgot password?</a>
+          <a
+            href="#forgot"
+            onClick={(event) => {
+              event.preventDefault();
+              onForgotPassword();
+            }}
+          >
+            Forgot password?
+          </a>
         </div>
         <button className="login-button" type="submit">
           Log in
