@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Download, History, House, Library, UserRound } from "lucide-react";
+import { Download, Highlighter, History, House, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/library", label: "Home", icon: House },
-  { href: "/library", label: "Library", icon: Library },
+  { href: "/library/highlights", label: "Highlights", icon: Highlighter },
   { href: "/library/saved", label: "Saved", icon: History },
   { href: "/library/downloads", label: "Downloads", icon: Download },
   { href: "/library/profile", label: "Profile", icon: UserRound },
@@ -26,7 +26,10 @@ export function AppSidebar() {
         </Link>
         <nav aria-label="Main" className="mt-auto mb-auto flex flex-col gap-5">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href;
+            const active =
+              href === "/library"
+                ? pathname === href
+                : pathname === href || pathname.startsWith(`${href}/`);
             return (
               <Link
                 key={`${href}-${label}`}
@@ -50,7 +53,10 @@ export function AppSidebar() {
         className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around border-t border-[#1c1c26]/10 bg-[#f1eee4]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       >
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href;
+          const active =
+            href === "/library"
+              ? pathname === href
+              : pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
               key={`mobile-${label}`}

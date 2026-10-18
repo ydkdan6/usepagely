@@ -5,6 +5,7 @@ import { LibraryTopbar } from "@/components/library/library-topbar";
 import { LibraryFooter } from "@/components/library/library-footer";
 import { ShelfScreen, ProfileScreen } from "@/components/library/shelf-screen";
 import { SavedScreen } from "@/components/library/saved-screen";
+import { HighlightsScreen } from "@/components/library/highlights-screen";
 import { useEffect } from "react";
 import { playClickSound } from "@/lib/click-sound";
 
@@ -24,7 +25,9 @@ export function LibraryShell({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, []);
   const screen =
-    path.endsWith("/history") || path.endsWith("/saved") ? (
+    path.endsWith("/highlights") || path.startsWith("/library/highlights/") ? (
+      <HighlightsScreen />
+    ) : path.endsWith("/history") || path.endsWith("/saved") ? (
       <SavedScreen />
     ) : path.endsWith("/downloads") ? (
       <ShelfScreen title="Downloaded books" kind="downloads" />
