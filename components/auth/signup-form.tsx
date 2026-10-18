@@ -44,8 +44,8 @@ export function SignupForm() {
             setLoading(false);
             return;
           }
-          if (data.session) router.push("/library");
-          else router.push("/library");
+          if (data.session) router.push("/");
+          else router.push("/");
         }}
       >
         <label className="field-label" htmlFor="full-name">

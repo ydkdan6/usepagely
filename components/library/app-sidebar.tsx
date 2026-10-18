@@ -6,7 +6,7 @@ import { Download, Highlighter, History, House, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: "/library", label: "Home", icon: House },
+  { href: "/", label: "Home", icon: House },
   { href: "/library/highlights", label: "Highlights", icon: Highlighter },
   { href: "/library/saved", label: "Saved", icon: History },
   { href: "/library/downloads", label: "Downloads", icon: Download },
@@ -19,7 +19,7 @@ export function AppSidebar() {
   return (
     <>
       <aside className="sticky top-0 hidden h-svh w-20 shrink-0 flex-col items-center border-r border-[#1c1c26]/10 bg-[#f1eee4] py-6 md:flex">
-        <Link href="/library" aria-label="UsePagely home" className="brand">
+        <Link href="/" aria-label="UsePagely home" className="brand">
           <span className="brand-mark" aria-hidden="true">
             <span />
           </span>
@@ -27,7 +27,7 @@ export function AppSidebar() {
         <nav aria-label="Main" className="mt-auto mb-auto flex flex-col gap-5">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const active =
-              href === "/library"
+              href === "/"
                 ? pathname === href
                 : pathname === href || pathname.startsWith(`${href}/`);
             return (
@@ -54,7 +54,7 @@ export function AppSidebar() {
       >
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active =
-            href === "/library"
+            href === "/"
               ? pathname === href
               : pathname === href || pathname.startsWith(`${href}/`);
           return (

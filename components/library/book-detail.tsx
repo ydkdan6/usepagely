@@ -131,7 +131,7 @@ export function BookDetail({ book }: { book: Book }) {
         </div>
       )}
       <Link
-        href="/library"
+        href="/"
         className="group mb-10 inline-flex items-center gap-3 text-lg font-medium text-[#1c1c26] transition-transform hover:-translate-x-1"
       >
         <ArrowLeft className="size-6" /> Back

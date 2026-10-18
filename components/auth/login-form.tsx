@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { signIn } from "@/lib/auth/actions";
 import { useRouter } from "next/navigation";
-import { Apple, LockKeyhole, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import { PasswordField } from "@/components/auth/password-field";
 import { toast } from "sonner";
 
@@ -26,23 +26,6 @@ export function LoginForm({
       <div className="eyebrow">WELCOME BACK</div>
       <h1 id="auth-title">Log in</h1>
       <p className="subheading">Continue your reading journey.</p>
-      <div className="social-actions">
-        <button className="social-button" type="button">
-          <span className="google-g" aria-hidden="true">
-            G
-          </span>
-          Log in using Google
-        </button>
-        <button className="social-button" type="button">
-          <Apple aria-hidden="true" />
-          Log in using Apple
-        </button>
-      </div>
-      <div className="divider">
-        <span />
-        <em>Or</em>
-        <span />
-      </div>
       {error && (
         <p role="alert" className="text-sm text-red-600">
           {error}
@@ -68,7 +51,7 @@ export function LoginForm({
             return;
           }
           toast.success("Welcome back.");
-          router.push("/library");
+          router.push("/");
         }}
       >
         <label className="field-label" htmlFor="email">
