@@ -2,6 +2,9 @@ import { Analytics } from "@vercel/analytics/next";
 import { Montserrat } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { DownloadManagerProvider } from "@/components/library/download-manager";
+import { Toaster } from "sonner";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -49,7 +52,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${montserrat.variable} antialiased`}>
-        {children}
+        <ThemeProvider>
+          <DownloadManagerProvider>
+            {children}
+            <Toaster position="bottom-right" richColors closeButton />
+          </DownloadManagerProvider>
+        </ThemeProvider>
         {process.env.NODE_ENV === "production" && <Analytics />}
       </body>
     </html>

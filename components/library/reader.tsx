@@ -32,6 +32,7 @@ export function Reader({ book }: { book: Book }) {
   const [offline, setOffline] = useState(false);
   const [error, setError] = useState("");
   const [bookmarked, setBookmarked] = useState(false);
+  const [fontSize, setFontSize] = useState(18);
 
   const loadChapter = useCallback(async () => {
     setError("");
@@ -176,6 +177,26 @@ export function Reader({ book }: { book: Book }) {
               fill={bookmarked ? "currentColor" : "none"}
             />
           </button>
+          <label
+            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm"
+            htmlFor="reader-font-size"
+          >
+            <span className="sr-only">Font size</span>
+            <span aria-hidden="true">A</span>
+            <input
+              id="reader-font-size"
+              type="range"
+              min="16"
+              max="24"
+              step="1"
+              value={fontSize}
+              onChange={(event) => setFontSize(Number(event.target.value))}
+              className="w-20"
+            />
+            <span aria-hidden="true" className="text-lg">
+              A
+            </span>
+          </label>
           <button className="rounded-xl p-3 hover:bg-black/5">
             <Settings2 className="size-5" />
           </button>
@@ -186,7 +207,7 @@ export function Reader({ book }: { book: Book }) {
       </header>
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-5 py-8 lg:grid-cols-[1fr_280px] lg:px-10">
         <article className="min-w-0">
-          <div className="mx-auto max-w-4xl">
+          <div className="mx-auto w-full max-w-[1100px] px-1 sm:px-4">
             <div className="mb-12 text-center">
               <p className="text-sm font-medium uppercase tracking-[.2em] text-[#ff6868]">
                 Chapter {chapter}
@@ -209,7 +230,10 @@ export function Reader({ book }: { book: Book }) {
                 </button>
               </div>
             ) : (
-              <div className="prose max-w-none text-lg leading-8">
+              <div
+                className="prose mx-auto max-w-[72ch] leading-8"
+                style={{ fontSize: `${fontSize}px` }}
+              >
                 {current?.htmlContent ? (
                   <div
                     dangerouslySetInnerHTML={{ __html: current.htmlContent }}

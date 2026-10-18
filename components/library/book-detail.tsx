@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   Bookmark,
@@ -20,6 +20,8 @@ import {
   removeOfflineBook,
 } from "@/lib/offline-db";
 import { ChapterList } from "@/components/library/chapter-list";
+import { useDownloadManager } from "@/components/library/download-manager";
+import { toast } from "sonner";
 
 export function BookDetail({ book }: { book: Book }) {
   const [expanded, setExpanded] = useState(false);
@@ -30,6 +32,7 @@ export function BookDetail({ book }: { book: Book }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [ratingError, setRatingError] = useState("");
+  const [saveError, setSaveError] = useState("");
   useEffect(() => {
     fetch(`/api/books/${book.id}/ratings`)
       .then((response) => response.json())
@@ -49,12 +52,14 @@ export function BookDetail({ book }: { book: Book }) {
   const [shared, setShared] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
   const [offlineBusy, setOfflineBusy] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState<{
-    done: number;
-    total: number;
-  } | null>(null);
-  const [downloadError, setDownloadError] = useState("");
-  const cancelDownload = useRef(false);
+  const {
+    downloads,
+    start: startDownload,
+    pause: pauseDownload,
+    resume: resumeDownload,
+    cancel: cancelDownload,
+  } = useDownloadManager();
+  const managerDownload = downloads.find((item) => item.book.id === book.id);
   useEffect(() => {
     void getOfflineBook(book.id).then((cached) => {
       if (cached?.chapters.length) setDownloaded(true);
@@ -62,68 +67,14 @@ export function BookDetail({ book }: { book: Book }) {
   }, [book.id]);
 
   async function toggleOffline() {
-    if (downloaded) {
-      await removeOfflineBook(book.id);
-      await fetch(`/api/downloads/${book.id}`, { method: "DELETE" });
-      setDownloaded(false);
+    if (!downloaded) {
+      startDownload(book);
       return;
     }
-    setOfflineBusy(true);
-    setDownloadError("");
-    cancelDownload.current = false;
-    try {
-      const titlesResponse = await fetch(
-        `/api/books/${book.id}/chapters?page=1`,
-      );
-      const titles = await titlesResponse.json();
-      const total = titles.total ?? 0;
-      let done = (await getOfflineBook(book.id))?.chapters.length ?? 0;
-      setDownloadProgress({ done, total });
-      for (
-        let start = done + 1;
-        start <= total && !cancelDownload.current;
-        start += 10
-      ) {
-        const numbers = Array.from(
-          { length: Math.min(10, total - start + 1) },
-          (_, i) => start + i,
-        );
-        const chapters = await Promise.all(
-          numbers.map(async (number) => {
-            const response = await fetch(
-              `/api/books/${book.id}/chapters/${number}`,
-            );
-            if (!response.ok)
-              throw new Error(`Chapter ${number} could not be downloaded`);
-            return (await response.json()).data;
-          }),
-        );
-        await saveOfflineBook(book, chapters);
-        done += chapters.length;
-        setDownloadProgress({ done, total });
-        await new Promise((resolve) => setTimeout(resolve, 150));
-      }
-      if (!cancelDownload.current && done >= total) {
-        const saved = await fetch("/api/downloads", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ bookId: book.id }),
-        });
-        if (!saved.ok) throw new Error("Could not save download status");
-        setDownloaded(true);
-      }
-    } catch (error) {
-      setDownloadError(
-        error instanceof Error && /quota|storage/i.test(error.message)
-          ? "Storage is full. Remove another download and try again."
-          : error instanceof Error
-            ? error.message
-            : "Download failed",
-      );
-    } finally {
-      setOfflineBusy(false);
-      if (!cancelDownload.current) setDownloadProgress(null);
-    }
+    await removeOfflineBook(book.id);
+    await fetch(`/api/downloads/${book.id}`, { method: "DELETE" });
+    setDownloaded(false);
+    return;
   }
   const description =
     book.description?.trim() || "No description is available for this book.";
@@ -156,9 +107,12 @@ export function BookDetail({ book }: { book: Book }) {
     }
     const data = await response.json();
     if (!response.ok) {
-      setRatingError(data.error ?? "Could not save rating");
+      const message = data.error ?? "Could not save rating";
+      setRatingError(message);
+      toast.error(message);
       return;
     }
+    toast.success("Rating saved.");
     setReviews((current) => [
       data.data,
       ...current.filter((item) => item.user_id !== data.data.user_id),
@@ -167,7 +121,15 @@ export function BookDetail({ book }: { book: Book }) {
   }
 
   return (
-    <article className="mx-auto max-w-[1180px] pb-20">
+    <article className="relative mx-auto max-w-[1180px] pb-20">
+      {saveError && (
+        <div
+          role="status"
+          className="fixed bottom-5 right-5 z-50 rounded-xl bg-[#1c1c26] px-4 py-3 text-sm font-semibold text-white shadow-xl"
+        >
+          {saveError}
+        </div>
+      )}
       <Link
         href="/library"
         className="group mb-10 inline-flex items-center gap-3 text-lg font-medium text-[#1c1c26] transition-transform hover:-translate-x-1"
@@ -236,46 +198,75 @@ export function BookDetail({ book }: { book: Book }) {
               Read
             </Link>
             <ActionButton
-              active={downloaded}
-              label={downloaded ? "Downloaded" : "Download for offline"}
+              active={Boolean(managerDownload)}
+              label={
+                managerDownload?.status === "finished"
+                  ? "Downloaded"
+                  : "Download for offline"
+              }
               onClick={toggleOffline}
             >
               <Bookmark
                 className={cn(
                   "size-6",
-                  (downloaded || saved) && "fill-current",
+                  managerDownload?.status === "finished" && "fill-current",
                 )}
               />
             </ActionButton>
-            {downloadProgress && (
+            {managerDownload && (
               <div className="basis-full text-sm text-[#1c1c26]/70">
-                Downloading {downloadProgress.done}/{downloadProgress.total}{" "}
+                <progress
+                  className="mr-2 w-48 align-middle"
+                  max={managerDownload.total || 1}
+                  value={managerDownload.done}
+                />{" "}
+                {managerDownload.done}/{managerDownload.total || "…"}{" "}
                 <button
                   type="button"
                   className="ml-2 underline"
-                  onClick={() => {
-                    cancelDownload.current = true;
-                  }}
+                  onClick={() =>
+                    managerDownload.status === "active"
+                      ? pauseDownload(book.id)
+                      : resumeDownload(book.id)
+                  }
+                >
+                  {managerDownload.status === "active" ? "Pause" : "Resume"}
+                </button>
+                <button
+                  type="button"
+                  className="ml-2 underline"
+                  onClick={() => cancelDownload(book.id)}
                 >
                   Cancel
                 </button>
               </div>
             )}
-            {downloadError && (
+            {managerDownload?.error && (
               <p role="alert" className="basis-full text-sm text-red-600">
-                {downloadError}
+                {managerDownload.error}
               </p>
             )}
             <ActionButton
               active={saved}
               label={saved ? "Saved" : "Save for later"}
               onClick={async () => {
+                const previous = saved;
+                setSaved(!previous);
                 const response = await fetch(`/api/saved-books/${book.id}`, {
-                  method: saved ? "DELETE" : "POST",
+                  method: previous ? "DELETE" : "POST",
                 });
-                if (response.status === 401)
+                if (response.status === 401) {
+                  setSaved(previous);
+                  toast.info("Log in to save books.");
                   window.location.href = `/auth/login?next=${encodeURIComponent(window.location.pathname)}`;
-                else if (response.ok) setSaved(!saved);
+                } else if (!response.ok) {
+                  const data = await response.json().catch(() => ({}));
+                  setSaved(previous);
+                  const message = data.error ?? "Could not update saved books.";
+                  setSaveError(message);
+                  toast.error(message);
+                  window.setTimeout(() => setSaveError(""), 3500);
+                }
               }}
             >
               <Bookmark className={cn("size-6", saved && "fill-current")} />

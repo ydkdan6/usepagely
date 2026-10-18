@@ -5,6 +5,7 @@ import { signIn } from "@/lib/auth/actions";
 import { useRouter } from "next/navigation";
 import { Apple, LockKeyhole, Mail } from "lucide-react";
 import { PasswordField } from "@/components/auth/password-field";
+import { toast } from "sonner";
 
 type LoginFormProps = {
   onCreateAccount: () => void;
@@ -58,14 +59,15 @@ export function LoginForm({
             password: form.get("password"),
           });
           if (error) {
-            setError(
-              error.message.includes("Email not confirmed")
-                ? "Please confirm your email first."
-                : "Invalid email or password.",
-            );
+            const message = error.message.includes("Email not confirmed")
+              ? "Please confirm your email first."
+              : "Invalid email or password.";
+            toast.error(message);
+            setError(message);
             setLoading(false);
             return;
           }
+          toast.success("Welcome back.");
           router.push("/library");
         }}
       >

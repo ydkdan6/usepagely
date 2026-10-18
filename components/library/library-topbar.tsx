@@ -5,6 +5,7 @@ import { Bell, Search } from "lucide-react";
 import { useLibraryFilters } from "@/hooks/use-library-filters";
 import { GutenbergSearchResults } from "@/components/library/gutenberg-search-results";
 import { avatarDataUri } from "@/lib/avatar";
+import { ThemeToggle } from "@/components/library/theme-toggle";
 
 export function LibraryTopbar() {
   const { q, update } = useLibraryFilters();
@@ -59,6 +60,7 @@ export function LibraryTopbar() {
         EN
       </button>
 
+      <ThemeToggle />
       <div className="flex items-center gap-3">
         <img
           src={avatarDataUri(

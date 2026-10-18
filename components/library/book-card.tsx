@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { BookOpen, Bookmark } from "lucide-react";
 import type { Book } from "@/lib/books/types";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export function BookCard({
   book,
@@ -15,6 +16,7 @@ export function BookCard({
 }) {
   const [failed, setFailed] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
   useEffect(() => {
     fetch("/api/saved-books", { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
@@ -30,18 +32,37 @@ export function BookCard({
   }, [book.id]);
   async function toggleSaved(event: React.MouseEvent) {
     event.preventDefault();
+    const previous = saved;
+    setSaved(!previous);
     const response = await fetch(`/api/saved-books/${book.id}`, {
-      method: saved ? "DELETE" : "POST",
+      method: previous ? "DELETE" : "POST",
     });
     if (response.status === 401) {
+      setSaved(previous);
+      toast.info("Log in to save books.");
       window.location.href = `/auth/login?next=${encodeURIComponent(window.location.pathname)}`;
       return;
     }
-    if (response.ok) setSaved(!saved);
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      setSaved(previous);
+      const message = data.error ?? "Could not update saved books.";
+      setSaveError(message);
+      toast.error(message);
+      window.setTimeout(() => setSaveError(""), 3500);
+    } else toast.success(previous ? "Removed from Saved." : "Saved for later.");
   }
 
   return (
-    <article className={cn("group flex flex-col", className)}>
+    <article className={cn("group relative flex flex-col", className)}>
+      {saveError && (
+        <div
+          role="status"
+          className="fixed bottom-5 right-5 z-50 rounded-xl bg-[#1c1c26] px-4 py-3 text-sm font-semibold text-white shadow-xl"
+        >
+          {saveError}
+        </div>
+      )}
       <Link
         href={`/library/book/${book.id}`}
         className="flex flex-col gap-3 rounded-md outline-offset-4"

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { SoundPreferences } from "@/components/library/sound-preferences";
 import { avatarDataUri } from "@/lib/avatar";
 import { useDownloadManager } from "@/components/library/download-manager";
+import { toast } from "sonner";
 
 export function ShelfScreen({
   title,
@@ -205,8 +206,11 @@ export function ProfileScreen() {
       body: JSON.stringify(profile),
     });
     const data = await result.json();
-    if (!result.ok) setError(data.error ?? "Could not save profile");
-    else {
+    if (!result.ok) {
+      const message = data.error ?? "Could not save profile";
+      setError(message);
+      toast.error(message);
+    } else {
       const currentUser = await supabase.auth.getUser();
       if (currentUser.data.user?.email !== email) {
         const emailResult = await supabase.auth.updateUser({ email });
@@ -215,7 +219,10 @@ export function ProfileScreen() {
           setMessage(
             "Profile updated. Check your email to confirm the new address.",
           );
-      } else setMessage("Profile updated");
+      } else {
+        setMessage("Profile updated");
+        toast.success("Profile updated.");
+      }
     }
     if (newPassword) {
       if (!currentPassword)
