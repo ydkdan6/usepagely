@@ -5,6 +5,7 @@ import { X, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { SoundPreferences } from "@/components/library/sound-preferences";
 import { avatarDataUri } from "@/lib/avatar";
+import { useDownloadManager } from "@/components/library/download-manager";
 
 export function ShelfScreen({
   title,
@@ -16,6 +17,7 @@ export function ShelfScreen({
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loggedOut, setLoggedOut] = useState(false);
+  const { downloads, pause, resume, cancel } = useDownloadManager();
   async function load() {
     setLoading(true);
     const response = await fetch(
@@ -52,6 +54,55 @@ export function ShelfScreen({
             : "Books saved for offline reading."}
         </p>
       </div>
+      {kind === "downloads" && downloads.length > 0 && (
+        <div className="space-y-4">
+          {downloads.map((item) => (
+            <article
+              key={item.book.id}
+              className="flex items-center gap-4 rounded-3xl border border-black/10 bg-white/60 p-4"
+            >
+              <img
+                src={item.book.coverUrl}
+                alt={`${item.book.title} cover`}
+                className="size-20 rounded-xl object-cover"
+              />
+              <div className="min-w-0 flex-1">
+                <h2 className="truncate font-bold">{item.book.title}</h2>
+                <progress
+                  className="mt-2 w-full"
+                  max={item.total || 1}
+                  value={item.done}
+                />
+                <p className="text-sm text-black/55">
+                  {item.status === "finished"
+                    ? "Ready for offline reading"
+                    : `${item.done}/${item.total || "…"} chapters`}
+                </p>
+              </div>
+              {item.status !== "finished" && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    item.status === "active"
+                      ? pause(item.book.id)
+                      : resume(item.book.id)
+                  }
+                  className="rounded-xl px-3 py-2 text-sm font-semibold"
+                >
+                  {item.status === "active" ? "Pause" : "Resume"}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => cancel(item.book.id)}
+                className="rounded-xl px-3 py-2 text-sm font-semibold"
+              >
+                Cancel
+              </button>
+            </article>
+          ))}
+        </div>
+      )}
       {loggedOut ? (
         <p className="rounded-3xl border border-black/10 bg-white/60 p-10 text-center">
           Log in to see your{" "}

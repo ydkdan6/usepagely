@@ -13,6 +13,7 @@ export type Book = {
   downloadSize?: number;
   category: string;
   rating: number;
+  ratingCount?: number;
   publishedYear: number;
   isExclusive: boolean;
   favorites: number;

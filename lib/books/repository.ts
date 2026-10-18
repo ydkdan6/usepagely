@@ -23,7 +23,8 @@ function mapBook(row: any): Book {
     coverUrl: row.cover_url ?? "",
     description: row.description ?? "",
     category: row.categories?.[0] ?? "General",
-    rating: 0,
+    rating: row.avg_rating ?? 0,
+    ratingCount: row.rating_count ?? 0,
     publishedYear: new Date(row.created_at).getFullYear(),
     favorites: 0,
   };

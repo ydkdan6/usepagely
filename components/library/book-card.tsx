@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { BookOpen } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BookOpen, Bookmark } from "lucide-react";
 import type { Book } from "@/lib/books/types";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,31 @@ export function BookCard({
   className?: string;
 }) {
   const [failed, setFailed] = useState(false);
+  const [saved, setSaved] = useState(false);
+  useEffect(() => {
+    fetch("/api/saved-books", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) =>
+        setSaved(
+          Boolean(
+            data?.data?.some(
+              (row: { book_id: string }) => row.book_id === book.id,
+            ),
+          ),
+        ),
+      );
+  }, [book.id]);
+  async function toggleSaved(event: React.MouseEvent) {
+    event.preventDefault();
+    const response = await fetch(`/api/saved-books/${book.id}`, {
+      method: saved ? "DELETE" : "POST",
+    });
+    if (response.status === 401) {
+      window.location.href = `/auth/login?next=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
+    if (response.ok) setSaved(!saved);
+  }
 
   return (
     <article className={cn("group flex flex-col", className)}>
@@ -44,11 +69,24 @@ export function BookCard({
             </span>
           )}
         </div>
+        <button
+          type="button"
+          aria-label="Save for later"
+          onClick={toggleSaved}
+          className="absolute right-2 top-2 rounded-full bg-white/90 p-2 shadow"
+        >
+          <Bookmark
+            className={cn("size-4", saved && "fill-current text-[#0da4ed]")}
+          />
+        </button>
         <div className="flex flex-col gap-1">
           <h3 className="line-clamp-2 text-sm font-medium leading-snug text-[#1c1c26]">
             {book.title}
           </h3>
           <p className="truncate text-xs text-[#1c1c26]/70">{book.author}</p>
+          <p className="text-xs text-[#1c1c26]/70">
+            ★ {book.rating.toFixed(1)} ({book.ratingCount ?? 0})
+          </p>
         </div>
       </Link>
     </article>

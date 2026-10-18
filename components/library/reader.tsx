@@ -18,6 +18,7 @@ import {
   getOfflineChapter,
   saveProgress,
 } from "@/lib/offline-db";
+import { ChapterSelect } from "@/components/library/chapter-select";
 
 type ChapterListResponse = { data?: Chapter[]; total?: number; error?: string };
 type ChapterResponse = { data?: Chapter; error?: string };
@@ -245,6 +246,42 @@ export function Reader({ book }: { book: Book }) {
             </div>
           </div>
         </article>
+        <ChapterSelect
+          bookId={book.id}
+          value={chapter}
+          onSelect={(nextChapter) => {
+            window.history.pushState(
+              null,
+              "",
+              `/library/read/${book.id}?chapter=${nextChapter}`,
+            );
+            setChapter(nextChapter);
+          }}
+        />
+        <div className="mt-6 flex gap-3">
+          <button
+            type="button"
+            disabled={chapter <= 1}
+            onClick={() =>
+              setChapter((currentChapter) => Math.max(1, currentChapter - 1))
+            }
+            className="rounded-xl border px-4 py-2 disabled:opacity-40"
+          >
+            Previous chapter
+          </button>
+          <button
+            type="button"
+            disabled={total <= chapter}
+            onClick={() =>
+              setChapter((currentChapter) =>
+                Math.min(total, currentChapter + 1),
+              )
+            }
+            className="rounded-xl border px-4 py-2 disabled:opacity-40"
+          >
+            Next chapter
+          </button>
+        </div>
       </div>
     </main>
   );
