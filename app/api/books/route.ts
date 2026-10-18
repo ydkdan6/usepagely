@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { listBooks } from "@/lib/books/repository";
 import { getSection } from "@/lib/books/sections";
+import { apiError } from "@/lib/api-error";
 
 const MAX_LIMIT = 24;
 
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest) {
   const section = getSection(params.get("section") ?? "latest");
 
   if (!section) {
-    return NextResponse.json({ error: "Unknown section" }, { status: 400 });
+    return apiError(new Error("Unknown section"), 404, "general");
   }
 
   const page = Math.max(1, Number.parseInt(params.get("page") ?? "1", 10) || 1);
@@ -33,9 +34,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     console.error("[v0] Failed to load books", error);
-    return NextResponse.json(
-      { error: "Unable to load books" },
-      { status: 503 },
-    );
+    return apiError(error, 503, "general");
   }
 }
