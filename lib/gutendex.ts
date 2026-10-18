@@ -1,9 +1,8 @@
 import { cache } from "react";
 
 const BASE_URL = "https://gutendex.com/books";
-const JSON_TIMEOUT_MS = 15_000;
-const TEXT_TIMEOUT_MS = 60_000; // book files are large
-const MAX_RETRIES = 2;
+const TIMEOUT_MS = 30_000;
+const MAX_RETRIES = 3;
 const MIN_DELAY_MS = 500;
 let lastRequestAt = 0;
 let activeRequests = 0;
@@ -36,28 +35,31 @@ async function fetchJson<T>(url: string): Promise<T> {
       if (delay) await wait(delay);
       lastRequestAt = Date.now();
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), JSON_TIMEOUT_MS);
+      const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
       try {
         const response = await fetch(url, {
           signal: controller.signal,
           headers: { accept: "application/json" },
-          cache: "no-store",
+          next: { revalidate: 3600 },
         });
         if (response.ok) return (await response.json()) as T;
         if (response.status === 429 || response.status >= 500) {
           const retryAfter = Number(response.headers.get("retry-after"));
           await wait(
-            Number.isFinite(retryAfter) && retryAfter > 0
+            Number.isFinite(retryAfter)
               ? retryAfter * 1000
-              : 2 ** attempt * 1000,
+              : 2 ** attempt * 500,
           );
           continue;
         }
         throw new Error(`Gutendex returned ${response.status}`);
       } catch (error) {
-        console.error("[gutendex]", url, (error as any)?.cause ?? error);
-        if (attempt === MAX_RETRIES) throw error;
-        await wait(2 ** attempt * 1000);
+        const normalized =
+          error instanceof Error
+            ? new Error(error.message, { cause: error })
+            : new Error(String(error), { cause: error });
+        if (attempt === MAX_RETRIES) throw normalized;
+        await wait(2 ** attempt * 500);
       } finally {
         clearTimeout(timeout);
       }
@@ -70,13 +72,11 @@ async function fetchJson<T>(url: string): Promise<T> {
 
 export const searchGutendex = cache(async (query: string, page = 1) =>
   fetchJson<GutendexResponse>(
-    `${BASE_URL}?languages=en&search=${encodeURIComponent(query)}&page=${page}`,
+    `${BASE_URL}?search=${encodeURIComponent(query)}&page=${page}`,
   ),
 );
 export const popularGutendex = cache(async (page = 1) =>
-  fetchJson<GutendexResponse>(
-    `${BASE_URL}?languages=en&sort=popular&page=${page}`,
-  ),
+  fetchJson<GutendexResponse>(`${BASE_URL}?sort=popular&page=${page}`),
 );
 export const getGutendexBook = cache(async (id: number) =>
   fetchJson<GutendexBook>(`${BASE_URL}/${id}`),
@@ -107,18 +107,14 @@ export async function fetchBookHtml(book: GutendexBook) {
 async function fetchTextWithRetry(url: string) {
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), TEXT_TIMEOUT_MS);
+    const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
     try {
-      const response = await fetch(url, {
-        signal: controller.signal,
-        cache: "no-store",
-      });
+      const response = await fetch(url, { signal: controller.signal });
       if (response.ok) return await response.text();
       throw new Error(`Text download returned ${response.status}`);
     } catch (error) {
-      console.error("[gutenberg-text]", url, (error as any)?.cause ?? error);
       if (attempt === MAX_RETRIES) throw error;
-      await wait(2 ** attempt * 1000);
+      await wait(2 ** attempt * 500);
     } finally {
       clearTimeout(timeout);
     }

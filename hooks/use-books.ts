@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import type { Book, BookQuery, Category, Paginated } from "@/lib/books/types";
+import { getFriendlyError } from "@/lib/errors";
 
 async function fetcher<T>(url: string): Promise<T> {
   const controller = new AbortController();
@@ -12,8 +13,15 @@ async function fetcher<T>(url: string): Promise<T> {
       signal: controller.signal,
     });
     const body = await response.json().catch(() => null);
-    if (!response.ok)
-      throw new Error(body?.error ?? `Request failed: ${response.status}`);
+    if (!response.ok) {
+      const friendly = getFriendlyError(
+        { status: response.status },
+        response.status === 429 ? "importing" : "general",
+      );
+      const error = new Error(friendly.message);
+      Object.assign(error, { status: response.status });
+      throw error;
+    }
     return body as T;
   } finally {
     window.clearTimeout(timeout);
@@ -37,11 +45,16 @@ export function useBooks({
 
   return useSWR<Paginated<Book>>(`/api/books?${params}`, fetcher, {
     keepPreviousData: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 300000,
   });
 }
 
 export function useCategories() {
   return useSWR<{ data: Category[] }>("/api/categories", fetcher, {
     revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 300000,
   });
 }

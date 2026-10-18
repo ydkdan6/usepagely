@@ -5,6 +5,8 @@ import "./globals.css";
 import { DownloadManagerProvider } from "@/components/library/download-manager";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SwrProvider } from "@/components/swr-provider";
+import { OfflineBanner } from "@/components/offline-banner";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -50,10 +52,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${montserrat.variable} antialiased`}>
         <ThemeProvider>
-          <DownloadManagerProvider>
-            {children}
-            <Toaster position="bottom-right" richColors closeButton />
-          </DownloadManagerProvider>
+          <SwrProvider>
+            <OfflineBanner />
+            <DownloadManagerProvider>
+              {children}
+              <Toaster position="bottom-right" richColors closeButton />
+            </DownloadManagerProvider>
+          </SwrProvider>
         </ThemeProvider>
         {process.env.NODE_ENV === "production" && <Analytics />}
       </body>

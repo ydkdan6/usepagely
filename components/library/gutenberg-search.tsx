@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Search, Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -12,6 +12,7 @@ type Result = {
 };
 export function GutenbergSearch() {
   const [query, setQuery] = useState("");
+  const controller = useRef<AbortController | null>(null);
   const [results, setResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState<number | null>(null);
@@ -19,12 +20,16 @@ export function GutenbergSearch() {
     event.preventDefault();
     if (!query.trim()) return;
     setLoading(true);
+    controller.current?.abort();
+    controller.current = new AbortController();
     try {
       const response = await fetch(
         `/api/gutenberg/search?q=${encodeURIComponent(query)}`,
+        { signal: controller.current.signal },
       );
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "Search failed");
+      if (!response.ok)
+        throw new Error(data.error?.message ?? data.error ?? "Search failed");
       setResults(data.results ?? []);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Search failed");
@@ -35,13 +40,14 @@ export function GutenbergSearch() {
   async function add(id: number) {
     setAdding(id);
     try {
-      const response = await fetch("/api/gutenberg/import", {
+      const response = await fetch("/api/gutenberg/add", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ gutenberg_id: id }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "Import failed");
+      if (!response.ok)
+        throw new Error(data.error?.message ?? data.error ?? "Import failed");
       setResults((items) =>
         items.map((item) =>
           item.id === id ? { ...item, alreadyImported: true } : item,
