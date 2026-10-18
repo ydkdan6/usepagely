@@ -5,7 +5,6 @@ import { PwaRegister } from "@/components/library/pwa-register";
 import { StreakWidget } from "@/components/library/streak-widget";
 import { SECTIONS } from "@/lib/books/sections";
 import { createClient } from "@/lib/supabase/server";
-import { GutenbergSearch } from "@/components/library/gutenberg-search";
 
 export default async function Page() {
   const {
@@ -17,7 +16,6 @@ export default async function Page() {
       <PwaRegister />
       <StreakWidget />
       <h1 className="sr-only">Home</h1>
-      <GutenbergSearch />
       <CategoryFilter />
       {SECTIONS.map((section) => (
         <BookRow key={section.slug} slug={section.slug} title={section.title} />

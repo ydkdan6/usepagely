@@ -70,11 +70,6 @@ async function fetchJson<T>(url: string): Promise<T> {
   throw new Error("Gutendex request failed");
 }
 
-export const searchGutendex = cache(async (query: string, page = 1) =>
-  fetchJson<GutendexResponse>(
-    `${BASE_URL}?search=${encodeURIComponent(query)}&page=${page}`,
-  ),
-);
 export const popularGutendex = cache(async (page = 1) =>
   fetchJson<GutendexResponse>(`${BASE_URL}?sort=popular&page=${page}`),
 );

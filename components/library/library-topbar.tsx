@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Bell, Search } from "lucide-react";
 import { useLibraryFilters } from "@/hooks/use-library-filters";
-import { GutenbergSearchResults } from "@/components/library/gutenberg-search-results";
+import { SearchSuggestions } from "@/components/library/search-suggestions";
 import { avatarDataUri } from "@/lib/avatar";
 
 export function LibraryTopbar() {
@@ -49,7 +49,13 @@ export function LibraryTopbar() {
           className="w-full min-w-0 max-w-md bg-transparent text-sm text-[#1c1c26] outline-none placeholder:text-[#1c1c26]/60"
         />
       </form>
-      <GutenbergSearchResults query={value.trim()} />
+      <SearchSuggestions
+        query={value}
+        onSelect={(selected) => {
+          setValue(selected);
+          update({ q: selected || null });
+        }}
+      />
 
       <button
         type="button"
