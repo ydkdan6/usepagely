@@ -133,9 +133,10 @@ export function HighlightsScreen() {
             />
           </label>
           <select
+            aria-label="Filter by highlight color"
             value={color}
             onChange={(event) => setColor(event.target.value)}
-            className="rounded-xl border border-border bg-card px-3 py-2 text-sm"
+            className="select-control rounded-xl border border-border bg-card px-3 py-2 pr-9 text-sm shadow-sm outline-none transition focus:border-[#0799ea] focus:ring-2 focus:ring-[#0799ea]/15"
           >
             <option value="all">All colors</option>
             {colors.slice(1).map((value) => (

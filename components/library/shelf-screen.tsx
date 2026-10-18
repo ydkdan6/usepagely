@@ -233,6 +233,14 @@ export function ProfileScreen() {
         if (data.user?.email) setEmail(data.user.email);
       });
   }, []);
+  async function handleLogout() {
+    const { error } = await supabase.auth.signOut();
+    if (error) toast.error("Could not log out.");
+    else {
+      toast.success("Logged out.");
+      window.location.href = "/login";
+    }
+  }
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
@@ -288,6 +296,16 @@ export function ProfileScreen() {
           Account
         </p>
         <h1 className="mt-2 text-4xl font-bold">My profile</h1>
+        <button
+          type="button"
+          onClick={handleLogout}
+          aria-label="Log out"
+          title="Log out"
+          className="mt-5 inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white/60 px-4 py-2 text-sm font-semibold transition-colors hover:bg-white"
+        >
+          <LogOut className="size-4" aria-hidden="true" />
+          Log out
+        </button>
       </div>
       <SoundPreferences />
       <ActivitySummary />
@@ -299,6 +317,7 @@ export function ProfileScreen() {
           </span>
         </span>
         <select
+          aria-label="Daily reading goal"
           value={profile.daily_goal_minutes}
           onChange={(event) =>
             setProfile({
@@ -306,7 +325,7 @@ export function ProfileScreen() {
               daily_goal_minutes: Number(event.target.value),
             })
           }
-          className="rounded-xl border border-border bg-background px-3 py-2"
+          className="select-control rounded-xl border border-border bg-background px-3 py-2 pr-8 shadow-sm outline-none transition focus:border-[#0799ea] focus:ring-2 focus:ring-[#0799ea]/15"
         >
           <option value={5}>5 minutes</option>
           <option value={10}>10 minutes</option>

@@ -30,12 +30,12 @@ export function CategoryFilter() {
           />
         ))
       ) : categories.length > 4 ? (
-        <label className="flex items-center gap-2 text-sm font-medium">
+        <label className="relative flex items-center gap-2 text-sm font-medium">
           <span className="sr-only">Filter by category</span>
           <select
             value={category}
             onChange={(event) => update({ category: event.target.value })}
-            className="rounded-full border border-[#1c1c26]/20 bg-white px-4 py-2.5 text-sm"
+            className="select-control rounded-full border border-[#1c1c26]/20 bg-white px-4 py-2.5 pr-10 text-sm shadow-sm outline-none transition focus:border-[#0799ea] focus:ring-2 focus:ring-[#0799ea]/15"
           >
             <option value="all">All</option>
             {categories

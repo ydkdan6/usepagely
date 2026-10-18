@@ -34,9 +34,15 @@ export function HighlightSelection({
         setQuote(text.slice(0, 2000));
       else setQuote("");
     };
+    const updateAfterPointer = () => window.setTimeout(updateSelection, 0);
     document.addEventListener("selectionchange", updateSelection);
-    return () =>
+    document.addEventListener("mouseup", updateAfterPointer);
+    document.addEventListener("touchend", updateAfterPointer);
+    return () => {
       document.removeEventListener("selectionchange", updateSelection);
+      document.removeEventListener("mouseup", updateAfterPointer);
+      document.removeEventListener("touchend", updateAfterPointer);
+    };
   }, []);
 
   async function saveHighlight() {
@@ -67,7 +73,21 @@ export function HighlightSelection({
   }
 
   return (
-    <>
+    <div
+      className="contents"
+      onMouseUp={() =>
+        window.setTimeout(() => {
+          const text = window.getSelection()?.toString().trim() ?? "";
+          if (text) setQuote(text.slice(0, 2000));
+        }, 0)
+      }
+      onTouchEnd={() =>
+        window.setTimeout(() => {
+          const text = window.getSelection()?.toString().trim() ?? "";
+          if (text) setQuote(text.slice(0, 2000));
+        }, 0)
+      }
+    >
       {children}
       {quote && (
         <div
@@ -106,6 +126,6 @@ export function HighlightSelection({
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 }
