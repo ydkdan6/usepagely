@@ -20,6 +20,7 @@ import {
 } from "@/lib/offline-db";
 import { ChapterSelect } from "@/components/library/chapter-select";
 import { WordLookup } from "@/components/library/word-lookup";
+import { ReadingActivityTracker } from "@/components/library/reading-activity-tracker";
 
 type ChapterListResponse = { data?: Chapter[]; total?: number; error?: string };
 type ChapterResponse = { data?: Chapter; error?: string };
@@ -152,6 +153,7 @@ export function Reader({ book }: { book: Book }) {
   const total = totalChapters || chapters.length;
   return (
     <WordLookup bookId={book.id}>
+      <ReadingActivityTracker />
       <main className="min-h-svh bg-[#f7f6f2] pb-20 text-[#1c1c26] [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-lg [&_img]:object-contain">
         <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[#1c1c26]/10 bg-[#f7f6f2]/90 px-5 py-4 backdrop-blur md:px-10">
           <Link

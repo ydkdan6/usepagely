@@ -13,6 +13,11 @@ const profileSchema = z.object({
   phone: z.string().trim().max(30),
   bio: z.string().trim().max(500),
   avatar_seed: z.string().min(1).max(100),
+  daily_goal_minutes: z
+    .number()
+    .int()
+    .refine((value) => [5, 10, 20, 30].includes(value)),
+  timezone: z.string().min(1).max(100),
 });
 export async function GET() {
   const supabase = await createClient();
@@ -23,7 +28,9 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { data, error } = await supabase
     .from("profiles")
-    .select("id,username,display_name,phone,bio,avatar_seed,updated_at")
+    .select(
+      "id,username,display_name,phone,bio,avatar_seed,daily_goal_minutes,timezone,updated_at",
+    )
     .eq("id", user.id)
     .maybeSingle();
   return NextResponse.json(
@@ -48,7 +55,9 @@ export async function PATCH(request: Request) {
       ...parsed.data,
       updated_at: new Date().toISOString(),
     })
-    .select("id,username,display_name,phone,bio,avatar_seed,updated_at")
+    .select(
+      "id,username,display_name,phone,bio,avatar_seed,daily_goal_minutes,timezone,updated_at",
+    )
     .single();
   if (error?.code === "23505")
     return NextResponse.json(
