@@ -26,7 +26,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
   const pathname = request.nextUrl.pathname;
   if (user && (pathname === "/login" || pathname === "/signup"))
-    return NextResponse.redirect(new URL("/library", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   if (!user && pathname.startsWith("/library"))
     return NextResponse.redirect(new URL("/", request.url));
   return response;

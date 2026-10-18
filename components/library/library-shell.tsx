@@ -12,6 +12,9 @@ import { playClickSound } from "@/lib/click-sound";
 export function LibraryShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+  }, [path]);
+  useEffect(() => {
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target as HTMLElement;
       if (

@@ -1,8 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Download, Highlighter, History, House, UserRound } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  Download,
+  Highlighter,
+  History,
+  House,
+  LogOut,
+  UserRound,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -15,6 +24,18 @@ const NAV_ITEMS = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    const { error } = await createClient().auth.signOut();
+    if (error) {
+      toast.error("Could not log out.");
+      return;
+    }
+    toast.success("Logged out.");
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <>
@@ -47,6 +68,15 @@ export function AppSidebar() {
             );
           })}
         </nav>
+        <button
+          type="button"
+          onClick={handleLogout}
+          aria-label="Log out"
+          title="Log out"
+          className="flex size-11 items-center justify-center rounded-xl text-[#1c1c26] transition-colors hover:bg-[#1c1c26]/5"
+        >
+          <LogOut className="size-5" aria-hidden="true" />
+        </button>
       </aside>
       <nav
         aria-label="Mobile main"
