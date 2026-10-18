@@ -21,17 +21,37 @@ export function ShelfScreen({
   const [loggedOut, setLoggedOut] = useState(false);
   const { downloads, pause, resume, cancel } = useDownloadManager();
   async function load() {
-    setLoading(true);
-    const response = await fetch(
-      kind === "history" ? "/api/history" : "/api/downloads",
-      { cache: "no-store" },
-    );
-    if (response.status === 401) setLoggedOut(true);
-    else {
-      const data = await response.json();
-      setRows(data.data ?? []);
+    if (kind === "downloads") {
+      const { getOfflineBooks } = await import("@/lib/offline-db");
+      const localBooks = await getOfflineBooks();
+      setRows(
+        localBooks.map(({ book }) => ({ book_id: book.id, books: book })),
+      );
+      setLoading(false);
+      if (!navigator.onLine) return;
+      try {
+        const response = await fetch("/api/downloads", { cache: "no-store" });
+        if (response.ok) {
+          const data = await response.json();
+          const remote = data.data ?? [];
+          setRows((current) => (current.length ? current : remote));
+        }
+      } catch {
+        /* local downloads remain available */
+      }
+      return;
     }
-    setLoading(false);
+    setLoading(true);
+    try {
+      const response = await fetch("/api/history", { cache: "no-store" });
+      if (response.status === 401) setLoggedOut(true);
+      else {
+        const data = await response.json();
+        setRows(data.data ?? []);
+      }
+    } finally {
+      setLoading(false);
+    }
   }
   useEffect(() => {
     void load();
@@ -105,7 +125,7 @@ export function ShelfScreen({
           ))}
         </div>
       )}
-      {loggedOut ? (
+      {kind === "history" && loggedOut ? (
         <p className="rounded-3xl border border-black/10 bg-white/60 p-10 text-center">
           Log in to see your{" "}
           {kind === "history" ? "reading history" : "downloads"}.
@@ -150,7 +170,9 @@ export function ShelfScreen({
                     </Link>
                     <button
                       aria-label={`Remove ${book.title}`}
-                      onClick={() => remove(row.book_id)}
+                      onClick={() => {
+                        void remove(row.book_id);
+                      }}
                       className="rounded-xl p-3"
                     >
                       <X className="size-5" />

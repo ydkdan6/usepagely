@@ -115,11 +115,12 @@ export function Reader({ book }: { book: Book }) {
     if (!current) return;
     const progress = totalChapters ? ((chapter - 1) / totalChapters) * 100 : 0;
     void saveProgress(book.id, chapter);
-    void fetch("/api/history", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ bookId: book.id, chapter, progress }),
-    });
+    if (navigator.onLine)
+      void fetch("/api/history", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ bookId: book.id, chapter, progress }),
+      });
   }, [book.id, chapter, current, totalChapters]);
   useEffect(() => {
     let timer: number | undefined;
@@ -138,11 +139,12 @@ export function Reader({ book }: { book: Book }) {
               100,
           ),
         );
-        void fetch("/api/history", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ bookId: book.id, chapter, progress }),
-        });
+        if (navigator.onLine)
+          void fetch("/api/history", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ bookId: book.id, chapter, progress }),
+          });
       }, 5000);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
