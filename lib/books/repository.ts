@@ -148,9 +148,10 @@ export async function listChapterContent(bookId: string, page = 1, limit = 50) {
   const from = (page - 1) * limit;
   const { data, count, error } = await supabase
     .from("chapters")
-    .select("id,book_id,chapter_number,title,content,html_content", {
-      count: "exact",
-    })
+    .select(
+      "id,book_id,chapter_number,title,content,html_content,content_format",
+      { count: "exact" },
+    )
     .eq("book_id", bookId)
     .order("chapter_number")
     .range(from, from + limit - 1);
@@ -162,6 +163,7 @@ export async function listChapterContent(bookId: string, page = 1, limit = 50) {
       chapterNumber: row.chapter_number,
       title: row.title,
       content: row.content,
+      contentFormat: row.content_format,
       htmlContent: row.html_content ?? undefined,
     })),
     page,
@@ -175,7 +177,9 @@ export async function getChapter(bookId: string, number: number) {
   const supabase = createPublicSupabaseClient();
   const { data, error } = await supabase
     .from("chapters")
-    .select("id,book_id,chapter_number,title,content")
+    .select(
+      "id,book_id,chapter_number,title,content,html_content,content_format",
+    )
     .eq("book_id", bookId)
     .eq("chapter_number", number)
     .maybeSingle();
@@ -187,6 +191,8 @@ export async function getChapter(bookId: string, number: number) {
         chapterNumber: data.chapter_number,
         title: data.title,
         content: data.content,
+        contentFormat: data.content_format,
+        htmlContent: data.html_content ?? undefined,
       }
     : undefined;
 }

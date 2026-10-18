@@ -87,9 +87,16 @@ export async function fetchBookText(book: GutendexBook) {
 }
 
 export async function fetchBookHtml(book: GutendexBook) {
-  const url = Object.entries(book.formats).find(
-    ([type, value]) => /text\/html/i.test(type) && !/zip/i.test(value),
-  )?.[1];
+  const url =
+    Object.entries(book.formats).find(
+      ([type, value]) =>
+        /text\/html/i.test(type) &&
+        /html\.images/i.test(type + value) &&
+        !/zip/i.test(value),
+    )?.[1] ??
+    Object.entries(book.formats).find(
+      ([type, value]) => /text\/html/i.test(type) && !/zip/i.test(value),
+    )?.[1];
   return url ? fetchTextWithRetry(url) : null;
 }
 

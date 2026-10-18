@@ -474,12 +474,12 @@
     flex-direction: column;
   }
 
-  @utility no-scrollbar {
+  .no-scrollbar {
     scrollbar-width: none;
+  }
 
-    &::-webkit-scrollbar {
-      display: none;
-    }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 
   .field-label {
@@ -779,5 +779,6 @@
       animation-duration: .01ms !important;
       transition-duration: .01ms !important;
     }
-  } 
   }
+
+}

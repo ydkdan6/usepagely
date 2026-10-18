@@ -24,6 +24,7 @@ export type Chapter = {
   chapterNumber: number;
   title: string;
   content?: string;
+  contentFormat?: "html" | "text";
   htmlContent?: string;
 };
 export type Category = { slug: string; name: string };
