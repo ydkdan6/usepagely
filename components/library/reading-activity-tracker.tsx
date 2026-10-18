@@ -35,11 +35,28 @@ export function ReadingActivityTracker() {
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
       });
-      if (response.ok && !goalReached.current) {
-        const data = await fetch("/api/reading-activity").then((r) => r.json());
-        if (data.today >= data.goal) {
+      if (response.ok) {
+        const data = await fetch("/api/reading-activity", {
+          cache: "no-store",
+          credentials: "include",
+        }).then((r) => r.json());
+        window.dispatchEvent(
+          new CustomEvent("reading-activity-updated", { detail: data }),
+        );
+        if (!goalReached.current && data.today >= data.goal) {
           goalReached.current = true;
           toast.success("Daily reading goal reached.");
+        }
+        if (
+          data.currentStreak > 0 &&
+          data.currentStreak !==
+            Number(sessionStorage.getItem("usepagely-streak"))
+        ) {
+          sessionStorage.setItem(
+            "usepagely-streak",
+            String(data.currentStreak),
+          );
+          toast.success(`${data.currentStreak} day streak! 🔥`);
         }
       }
     };

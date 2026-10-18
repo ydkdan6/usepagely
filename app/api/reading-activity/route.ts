@@ -6,9 +6,7 @@ const schema = z.object({
   seconds: z.number().int().min(0).max(86400),
   timezone: z.string().min(1).max(100).optional(),
 });
-function localDate(timeZone: string) {
-  return new Intl.DateTimeFormat("en-CA", { timeZone }).format(new Date());
-}
+import { calculateReadingStreak, getLocalDate } from "@/lib/reading-streak";
 export async function POST(request: Request) {
   const supabase = await createClient();
   const {
@@ -22,8 +20,13 @@ export async function POST(request: Request) {
       { error: "Invalid reading activity" },
       { status: 400 },
     );
-  const timezone = parsed.data.timezone ?? "UTC";
-  const date = localDate(timezone);
+  const { data: savedProfile } = await supabase
+    .from("profiles")
+    .select("timezone")
+    .eq("id", user.id)
+    .maybeSingle();
+  const timezone = savedProfile?.timezone || parsed.data.timezone || "UTC";
+  const date = getLocalDate(timezone);
   const { data: existing } = await supabase
     .from("reading_activity")
     .select("seconds_read")
@@ -58,13 +61,12 @@ export async function GET() {
     .eq("id", user.id)
     .maybeSingle();
   const timezone = profile?.timezone || "UTC";
-  const today = localDate(timezone);
+  const today = getLocalDate(timezone);
   const { data: rows, error } = await supabase
     .from("reading_activity")
     .select("activity_date,seconds_read")
     .eq("user_id", user.id)
-    .order("activity_date", { ascending: false })
-    .limit(370);
+    .order("activity_date", { ascending: false });
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
   const goal = (profile?.daily_goal_minutes ?? 10) * 60;
@@ -76,22 +78,16 @@ export async function GET() {
     date.setUTCDate(date.getUTCDate() - offset);
     return date.toISOString().slice(0, 10);
   };
-  let current = 0;
-  while ((byDate.get(day(current)) ?? 0) >= goal) current += 1;
-  let longest = 0;
-  let run = 0;
-  for (let i = 0; i < 370; i += 1) {
-    if ((byDate.get(day(i)) ?? 0) >= goal) {
-      run += 1;
-      longest = Math.max(longest, run);
-    } else run = 0;
-  }
+  const { currentStreak, longestStreak } = calculateReadingStreak(
+    rows ?? [],
+    today,
+  );
   return NextResponse.json(
     {
       today: byDate.get(today) ?? 0,
       goal,
-      currentStreak: current,
-      longestStreak: longest,
+      currentStreak,
+      longestStreak,
       weekly: Array.from({ length: 7 }, (_, index) => ({
         date: day(6 - index),
         seconds: byDate.get(day(6 - index)) ?? 0,

@@ -40,9 +40,15 @@ export function StreakWidget() {
         })
         .catch(() => {});
     };
+    const onActivity = (event: Event) => {
+      const data = (event as CustomEvent<Stats>).detail;
+      setStats(data);
+    };
+    window.addEventListener("reading-activity-updated", onActivity);
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", refresh);
     return () => {
+      window.removeEventListener("reading-activity-updated", onActivity);
       window.removeEventListener("focus", refresh);
       document.removeEventListener("visibilitychange", refresh);
     };
