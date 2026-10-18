@@ -1,6 +1,7 @@
 import { openDB, type DBSchema } from "idb";
 import type { Book, Chapter } from "@/lib/books/types";
 interface PagelyDB extends DBSchema {
+  dictionary: { key: string; value: unknown };
   books: {
     key: string;
     value: { book: Book; chapters: Chapter[]; savedAt: number };
@@ -11,12 +12,22 @@ interface PagelyDB extends DBSchema {
   };
 }
 const db = () =>
-  openDB<PagelyDB>("usepagely", 1, {
+  openDB<PagelyDB>("usepagely", 2, {
     upgrade(database) {
-      database.createObjectStore("books");
-      database.createObjectStore("progress");
+      if (!database.objectStoreNames.contains("dictionary"))
+        database.createObjectStore("dictionary");
+      if (!database.objectStoreNames.contains("books"))
+        database.createObjectStore("books");
+      if (!database.objectStoreNames.contains("progress"))
+        database.createObjectStore("progress");
     },
   });
+export async function getDictionaryCache(word: string) {
+  return (await db()).get("dictionary", word);
+}
+export async function setDictionaryCache(word: string, value: unknown) {
+  await (await db()).put("dictionary", value, word);
+}
 export async function saveOfflineBook(book: Book, chapters: Chapter[]) {
   const value = await db();
   const existing = await value.get("books", book.id);
