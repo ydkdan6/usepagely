@@ -2,6 +2,15 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const isPublicGetRoute =
+    request.method === "GET" &&
+    (pathname === "/api/books" ||
+      pathname.startsWith("/api/books/") ||
+      pathname === "/api/categories" ||
+      pathname.startsWith("/api/categories/"));
+  if (isPublicGetRoute) return NextResponse.next({ request });
+
   let response = NextResponse.next({ request });
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,7 +33,6 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const pathname = request.nextUrl.pathname;
   if (user && (pathname === "/login" || pathname === "/signup"))
     return NextResponse.redirect(new URL("/", request.url));
   if (!user && pathname.startsWith("/library"))

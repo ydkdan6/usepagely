@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { seedPopularBooks } from "@/lib/books/catalog";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function POST(request: Request) {
   const expected = process.env.GUTENBERG_ADMIN_TOKEN;
@@ -21,8 +21,9 @@ export async function POST(request: Request) {
         imported: [],
         skipped: [],
         failed: [{ gutenberg_id: 0, error: message }],
+        summary: `Catalog seed failed: ${message}`,
       },
-      { status: 502 },
+      { status: 200 },
     );
   }
 }

@@ -6,6 +6,7 @@ import { LibraryFooter } from "@/components/library/library-footer";
 import { ShelfScreen, ProfileScreen } from "@/components/library/shelf-screen";
 import { SavedScreen } from "@/components/library/saved-screen";
 import { HighlightsScreen } from "@/components/library/highlights-screen";
+import { InstallPrompt } from "@/components/library/install-prompt";
 import { useEffect } from "react";
 import { playClickSound } from "@/lib/click-sound";
 
@@ -40,15 +41,18 @@ export function LibraryShell({ children }: { children: React.ReactNode }) {
       children
     );
   return (
-    <div className="flex min-h-svh bg-[#f7f6f2] text-[#1c1c26]">
-      <AppSidebar />
-      <div className="min-w-0 flex-1">
-        <LibraryTopbar />
-        <main className="mx-auto max-w-7xl px-5 pb-24 pt-8 md:px-10 md:pb-8 lg:py-14">
-          {screen}
-        </main>
-        <LibraryFooter />
+    <>
+      <InstallPrompt />
+      <div className="flex min-h-svh bg-[#f7f6f2] text-[#1c1c26]">
+        <AppSidebar />
+        <div className="min-w-0 flex-1">
+          <LibraryTopbar />
+          <main className="mx-auto max-w-7xl px-5 pb-24 pt-8 md:px-10 md:pb-8 lg:py-14">
+            {screen}
+          </main>
+          <LibraryFooter />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

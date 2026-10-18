@@ -58,6 +58,12 @@ export async function getOfflineChapter(id: string, chapterNumber: number) {
 export async function getOfflineBook(id: string) {
   return (await db()).get("books", id);
 }
+export async function getOfflineBooks() {
+  return (await db()).getAll("books");
+}
+export async function persistOfflineStorage() {
+  return navigator.storage?.persist?.() ?? false;
+}
 export async function removeOfflineBook(id: string) {
   await (await db()).delete("books", id);
 }

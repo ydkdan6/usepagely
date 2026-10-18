@@ -98,10 +98,6 @@ export async function GET() {
         goal,
       })),
     },
-    {
-      headers: {
-        "Cache-Control": "private, max-age=20, stale-while-revalidate=60",
-      },
-    },
+    { headers: { "Cache-Control": "private, no-store" } },
   );
 }

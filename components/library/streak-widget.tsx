@@ -7,7 +7,10 @@ type Stats = { today: number; goal: number; currentStreak: number };
 export function StreakWidget() {
   const [stats, setStats] = useState<Stats | null>(null);
   useEffect(() => {
-    fetch("/api/reading-activity")
+    fetch("/api/reading-activity", {
+      cache: "no-store",
+      credentials: "include",
+    })
       .then(async (r) => {
         if (r.status === 401) return null;
         const data = await r.json();
@@ -21,6 +24,28 @@ export function StreakWidget() {
           toast.success("Daily reading goal reached.");
       })
       .catch(() => {});
+    const refresh = () => {
+      fetch("/api/reading-activity", {
+        cache: "no-store",
+        credentials: "include",
+      })
+        .then(async (r) => {
+          if (r.status === 401) return null;
+          const data = await r.json();
+          if (!r.ok) throw new Error(data.error);
+          return data;
+        })
+        .then((data) => {
+          if (data) setStats(data);
+        })
+        .catch(() => {});
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
   }, []);
   if (!stats) return null;
   const percent = Math.min(

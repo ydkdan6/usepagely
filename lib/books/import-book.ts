@@ -55,6 +55,24 @@ export function cleanGutenbergHtml(raw: string) {
   });
 }
 
+export function htmlToPlainText(html: string) {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p\s*>/gi, "\n\n")
+    .replace(/<\/h[1-6]\s*>/gi, "\n\n")
+    .replace(/<\/li\s*>/gi, "\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&quot;/gi, '"')
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export function cleanGutenbergText(raw: string) {
   const normalized = raw.replace(/\r\n?/g, "\n");
   const start = normalized.search(
@@ -198,7 +216,10 @@ export async function importBook(input: unknown) {
         book_id: saved.id,
         chapter_number: chapter.chapterNumber,
         title: chapter.title,
-        content: "content" in chapter ? chapter.content : null,
+        content:
+          "content" in chapter
+            ? chapter.content
+            : htmlToPlainText(chapter.html),
         html_content: "html" in chapter ? chapter.html : null,
         content_format: "html" in chapter ? "html" : "text",
         image_bytes: imageResult.imageBytes,

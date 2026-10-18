@@ -28,6 +28,7 @@ export function ReadingActivityTracker() {
       active.current = 0;
       const response = await fetch("/api/reading-activity", {
         method: "POST",
+        credentials: "include",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           seconds,

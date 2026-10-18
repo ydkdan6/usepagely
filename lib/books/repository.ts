@@ -162,7 +162,7 @@ export async function listChapterContent(bookId: string, page = 1, limit = 50) {
       bookId: row.book_id,
       chapterNumber: row.chapter_number,
       title: row.title,
-      content: row.content,
+      content: row.content ?? undefined,
       contentFormat: row.content_format,
       htmlContent: row.html_content ?? undefined,
     })),
@@ -190,7 +190,7 @@ export async function getChapter(bookId: string, number: number) {
         bookId: data.book_id,
         chapterNumber: data.chapter_number,
         title: data.title,
-        content: data.content,
+        content: data.content ?? undefined,
         contentFormat: data.content_format,
         htmlContent: data.html_content ?? undefined,
       }

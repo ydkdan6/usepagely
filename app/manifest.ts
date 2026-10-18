@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "UsePagely",
     short_name: "UsePagely",
     description: "Read books anywhere",
-    start_url: "/library",
+    start_url: "/offline",
     display: "standalone",
     background_color: "#f1eee4",
     theme_color: "#f1eee4",

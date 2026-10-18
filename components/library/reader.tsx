@@ -253,7 +253,9 @@ export function Reader({ book }: { book: Book }) {
                       />
                     ) : (
                       <div className="whitespace-pre-wrap">
-                        {current?.content ?? "Loading chapter…"}
+                        {current?.htmlContent ??
+                          current?.content ??
+                          "Loading chapter…"}
                       </div>
                     )}
                   </div>

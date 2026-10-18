@@ -13,6 +13,7 @@ import {
   getOfflineBook,
   saveOfflineBook,
   removeOfflineBook,
+  persistOfflineStorage,
 } from "@/lib/offline-db";
 import { toast } from "sonner";
 
@@ -61,6 +62,7 @@ export function DownloadManagerProvider({
   }, [downloads]);
 
   async function start(book: Book) {
+    await persistOfflineStorage();
     if (running.current.has(book.id)) return;
     running.current.add(book.id);
     paused.current.delete(book.id);

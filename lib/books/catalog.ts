@@ -24,7 +24,26 @@ export type SeedSummary = {
 export async function seedPopularBooks(): Promise<SeedSummary> {
   const db = createServiceSupabaseClient();
   const summary: SeedSummary = { imported: [], skipped: [], failed: [] };
-  const result = await popularGutendex(1);
+  let result;
+  try {
+    result = await popularGutendex(1);
+  } catch (pageOneError) {
+    try {
+      result = await popularGutendex(2);
+    } catch (pageTwoError) {
+      const first =
+        pageOneError instanceof Error
+          ? pageOneError.message
+          : String(pageOneError);
+      const second =
+        pageTwoError instanceof Error
+          ? pageTwoError.message
+          : String(pageTwoError);
+      throw new Error(
+        `Gutendex page 1 failed: ${first}; page 2 fallback failed: ${second}`,
+      );
+    }
+  }
   const popular = result.results
     .filter((book) => book.languages?.includes("en"))
     .slice(0, 20);
@@ -88,7 +107,26 @@ export async function ensureCatalog() {
     );
   if (lock.error) throw lock.error;
   try {
-    const result = await popularGutendex(1);
+    let result;
+    try {
+      result = await popularGutendex(1);
+    } catch (pageOneError) {
+      try {
+        result = await popularGutendex(2);
+      } catch (pageTwoError) {
+        const first =
+          pageOneError instanceof Error
+            ? pageOneError.message
+            : String(pageOneError);
+        const second =
+          pageTwoError instanceof Error
+            ? pageTwoError.message
+            : String(pageTwoError);
+        throw new Error(
+          `Gutendex page 1 failed: ${first}; page 2 fallback failed: ${second}`,
+        );
+      }
+    }
     const failures = [];
     for (const book of result.results.slice(0, 10)) {
       try {
