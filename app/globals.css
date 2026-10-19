@@ -173,72 +173,49 @@
     font-weight: 500;
   }
 
-  .brand-mark {
+  /* ==========================================================
+     AUTH SCREENS
+     Concept: the left panel is a ruled exercise-book page. The
+     UsePagely wordmark is "written" so its baseline sits on a
+     ruled line, with a coral margin rule and an ink bookmark
+     ribbon (the same bookmark that is in the logo icon).
+     ========================================================== */
+
+  .login-page {
+    --brand: #f15a3a;
+    --brand-hover: #f66f52;
+    --brand-ink: #1c1c26;
+    --link: #c0391a;
+    --paper: #f8f9f6;
+    --paper-rule: #c9d8e6;
+    --font-ui: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+    --font-display: var(--font-literata), Georgia, 'Times New Roman', serif;
+
     position: relative;
-    width: 35px;
-    height: 35px;
-    border: 3px solid #1c1c26;
-    border-radius: 9px;
-    display: inline-block;
-  }
-
-  .brand-mark::before,
-  .brand-mark::after,
-  .brand-mark span {
-    content: '';
-    position: absolute;
-    background: #1c1c26;
-  }
-
-  .brand-mark::before {
-    width: 3px;
-    height: 18px;
-    left: 9px;
-    top: -3px;
-    border-radius: 0 0 4px 4px;
-  }
-
-  .brand-mark::after {
-    width: 3px;
-    height: 18px;
-    right: 9px;
-    top: -3px;
-    border-radius: 0 0 4px 4px;
-  }
-
-  .brand-mark span {
-    width: 13px;
-    height: 13px;
-    border-left: 3px solid #1c1c26;
-    border-bottom: 3px solid #1c1c26;
-    background: transparent;
-    transform: rotate(-45deg);
-    left: 8px;
-    top: 7px;
-  }
-
-  .language-switcher {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    border: 2px solid #0799ea;
-    border-radius: 30px;
-    background: #fff;
-    color: #1c1c26;
-    padding: 10px 15px;
+    min-height: 100svh;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-ui);
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0;
   }
 
-  .language-switcher svg {
-    width: 17px;
-    height: 17px;
-    color: #0799ea;
+  .dark .login-page {
+    --link: #ff8467;
   }
 
-  .flag {
-    font-size: 20px;
-    line-height: 1;
+  @media (prefers-color-scheme: dark) {
+    :root:not(.light) .login-page {
+      --link: #ff8467;
+    }
+  }
+
+  .login-page :focus-visible {
+    outline: 3px solid var(--brand);
+    outline-offset: 3px;
+    border-radius: 4px;
   }
 
   .login-layout {
@@ -247,111 +224,125 @@
     grid-template-columns: minmax(52%, 1.15fr) minmax(420px, .85fr);
   }
 
+  /* ---------- Left: ruled page ---------- */
+
   .art-panel {
-    background: #f1eee4;
+    /* everything on this panel is sized from the logo width, so the
+       rules, margin and baseline stay in register at every size */
+    --logo-w: 36vw;
+    --R: calc(var(--logo-w) * 0.0587);
+    /* rule spacing = quarter of logo height */
+
     position: relative;
     overflow: hidden;
     isolation: isolate;
+    background-color: var(--paper);
+    background-image: repeating-linear-gradient(to bottom,
+        transparent 0,
+        transparent calc(var(--R) - 2px),
+        var(--paper-rule) calc(var(--R) - 2px),
+        var(--paper-rule) var(--R));
   }
 
+  /* coral margin rule */
   .art-panel::before {
     content: '';
     position: absolute;
-    inset: -13% -5% 35% -13%;
-    background: #fff;
-    border-radius: 0 0 38% 28%;
-    transform: rotate(-3deg);
-    box-shadow: 0 12px 18px rgba(47, 43, 33, .14);
+    top: 0;
+    bottom: 0;
+    left: 8vw;
+    width: 2px;
+    background: var(--brand);
+    opacity: .7;
+    z-index: 1;
   }
 
-  .glow {
+  /* ink bookmark ribbon: the one moment of motion */
+  .art-panel::after {
+    content: '';
     position: absolute;
-    border-radius: 50%;
-    background: #fffdf6;
-    filter: blur(2px);
-    opacity: .9;
+    top: 0;
+    left: calc(8vw - 15px);
+    width: 32px;
+    height: calc(var(--R) * 5);
+    background: var(--brand-ink);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 15px), 0 100%);
+    z-index: 3;
+    animation: ribbon-drop .9s cubic-bezier(.2, .9, .25, 1) .15s both;
   }
 
-  .glow-one {
-    width: 110px;
-    height: 110px;
-    top: 13%;
-    right: 22%;
-  }
-
-  .glow-two {
-    width: 150px;
-    height: 150px;
-    bottom: 3%;
-    right: 7%;
-  }
-
-  .book-art {
+  .art-logo {
     position: absolute;
-    overflow: hidden;
-    box-shadow: 0 16px 28px rgba(27, 25, 20, .2);
-  }
-
-  .book-art img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: left center;
+    z-index: 2;
     display: block;
-    transform: scale(1.55);
-    transform-origin: left center;
+    left: 12vw;
+    /* wordmark baseline sits on rule #12 (baseline is 71.6% down the SVG) */
+    top: calc(var(--R) * 9.136 - 1px);
+    width: var(--logo-w);
+    height: auto;
   }
 
-  .book-art-back {
-    width: 54%;
-    height: 82%;
-    left: -11%;
-    bottom: -10%;
-    border-radius: 0 42% 0 0;
-    transform: rotate(-12deg);
-    opacity: .95;
-  }
-
-  .book-art-front {
-    width: 77%;
-    height: 77%;
-    left: 15%;
-    top: 26%;
-    border-radius: 22px 105px 155px 22px;
-    transform: rotate(0deg);
-    animation: float-book 8s ease-in-out infinite;
-  }
-
-  .book-art-front img {
-    transform: scale(1.65);
-    object-position: left center;
-  }
-
-  .art-caption {
-    position: absolute;
-    bottom: 34px;
-    left: 15%;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: .04em;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, .6);
-  }
-
-  .art-caption svg {
-    width: 16px;
-    color: #ffe59a;
-  }
+  /* ---------- Right: form ---------- */
 
   .form-panel {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 130px 6vw 70px;
-    background: #fff;
+    padding: 120px 6vw 64px;
+    background: var(--background);
+  }
+
+  .topbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    padding: 28px 6vw;
+  }
+
+  .brand {
+    display: inline-flex;
+    border-radius: 12px;
+  }
+
+  .brand img {
+    display: block;
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
+  }
+
+  .form-content {
+    width: min(100%, 440px);
+  }
+
+  .eyebrow {
+    margin: 0 0 12px;
+    color: var(--muted-foreground);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  .form-content h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 3vw, 2.75rem);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -.015em;
+  }
+
+  .subheading {
+    max-width: 38ch;
+    margin: 12px 0 32px;
+    color: var(--muted-foreground);
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0;
   }
 
   .forgot-description {
@@ -366,62 +357,34 @@
     max-width: 480px;
   }
 
-  .text-action {
-    display: block;
-    margin: 23px auto 0;
-    border: 0;
-    background: transparent;
-    color: #0799ea;
-    font: inherit;
+  .auth-error {
+    margin: 0 0 22px;
+    padding: 12px 14px;
+    border-left: 4px solid #d6431f;
+    border-radius: 4px 8px 8px 4px;
+    background: color-mix(in oklab, var(--destructive) 10%, transparent);
+    color: var(--foreground);
+    font-size: 14px;
     font-weight: 600;
-    text-decoration: underline;
-    cursor: pointer;
   }
 
-  .text-action:hover {
-    color: #078bd2;
-  }
-
-  .form-content {
-    width: min(100%, 500px);
-    animation: reveal .8s cubic-bezier(.2, .8, .2, 1) both;
-  }
-
-  .eyebrow {
-    color: #0799ea;
-    font-size: 12px;
-    letter-spacing: .18em;
-    font-weight: 700;
-    margin-bottom: 13px;
-  }
-
-  .form-content h1 {
-    margin: 0;
-    font-size: clamp(32px, 3vw, 43px);
-    letter-spacing: -1.8px;
-  }
-
-  .subheading {
-    color: #7d7d84;
-    margin: 9px 0 28px;
-    font-size: 15px;
-  }
+  /* ---------- Social + divider (used by signup) ---------- */
 
   .social-actions {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
   }
 
   .social-button,
   .login-button {
     width: 100%;
-    border-radius: 10px;
-    min-height: 52px;
+    min-height: 54px;
+    border-radius: 12px;
     font: inherit;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    transition: transform .2s, box-shadow .2s, background .2s;
+    transition: background-color .15s, border-color .15s, transform .1s;
   }
 
   .social-button {
@@ -429,20 +392,20 @@
     align-items: center;
     justify-content: center;
     gap: 11px;
-    background: #fff;
-    border: 1.5px solid #1c1c26;
-    color: #1c1c26;
+    background: transparent;
+    border: 1.5px solid color-mix(in oklab, var(--foreground) 35%, transparent);
+    color: var(--foreground);
   }
 
   .social-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(0, 0, 0, .08);
+    background: var(--muted);
+    border-color: var(--foreground);
   }
 
   .social-button svg {
     width: 21px;
     height: 21px;
-    fill: #1c1c26;
+    fill: currentColor;
   }
 
   .google-g {
@@ -454,21 +417,23 @@
   .divider {
     display: flex;
     align-items: center;
-    gap: 10px;
-    color: #8d8d92;
-    margin: 27px 0;
+    gap: 12px;
+    margin: 26px 0;
+    color: var(--muted-foreground);
     font-size: 14px;
   }
 
   .divider span {
     height: 1px;
-    background: #b8b8bd;
+    background: var(--border);
     flex: 1;
   }
 
   .divider em {
     font-style: normal;
   }
+
+  /* ---------- Fields: written on a line ---------- */
 
   .form-content form {
     display: flex;
@@ -484,127 +449,172 @@
   }
 
   .field-label {
-    color: #282832;
-    font-size: 15px;
-    margin: 0 0 -8px 15px;
-    padding: 0 3px;
-    background: #fff;
-    width: fit-content;
-    z-index: 1;
+    display: block;
+    width: auto;
+    margin: 0 0 4px;
+    padding: 0;
+    background: none;
+    color: var(--foreground);
+    font-size: 14px;
+    font-weight: 600;
   }
 
   .input-wrap {
-    height: 52px;
-    border: 1.5px solid #1c1c26;
-    border-radius: 10px;
     display: flex;
     align-items: center;
-    padding: 0 14px;
-    margin-bottom: 25px;
-    transition: box-shadow .2s, border-color .2s;
+    gap: 10px;
+    height: 54px;
+    margin-bottom: 22px;
+    padding: 0 6px 0 10px;
+    border: 0;
+    border-bottom: 2px solid color-mix(in oklab, var(--foreground) 50%, transparent);
+    border-radius: 8px 8px 0 0;
+    background: transparent;
+    transition: border-color .15s, background-color .15s;
+  }
+
+  .input-wrap:hover {
+    border-bottom-color: var(--foreground);
   }
 
   .input-wrap:focus-within {
-    border-color: #0799ea;
-    box-shadow: 0 0 0 3px rgba(7, 153, 234, .13);
+    border-bottom-color: var(--brand);
+    background: color-mix(in oklab, var(--brand) 8%, transparent);
   }
 
   .input-wrap svg {
-    width: 17px;
-    color: #95959b;
-    margin-right: 10px;
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    color: var(--muted-foreground);
   }
 
   .input-wrap input {
     flex: 1;
+    min-width: 0;
+    height: 100%;
     border: 0;
     outline: 0;
-    min-width: 0;
-    font: inherit;
     background: transparent;
+    color: var(--foreground);
+    font: inherit;
+    font-size: 16px;
+  }
+
+  .login-page .input-wrap input:focus-visible {
+    outline: 0;
   }
 
   .password-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
     border: 0;
+    border-radius: 8px;
     background: transparent;
-    padding: 3px;
+    color: var(--foreground);
     cursor: pointer;
-    color: #33333d;
+  }
+
+  .password-toggle:hover {
+    background: var(--muted);
   }
 
   .password-toggle svg {
     margin: 0;
-    color: #33333d;
+    color: currentColor;
   }
 
   .form-options {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    margin: -5px 0 22px;
-    font-size: 13px;
+    gap: 10px 16px;
+    margin: -2px 0 26px;
+    font-size: 14px;
   }
 
   .remember-label {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    gap: 9px;
+    cursor: pointer;
   }
 
   .remember-label input {
-    accent-color: #0799ea;
     width: 18px;
     height: 18px;
+    accent-color: var(--brand);
   }
 
   .form-options a,
-  .signup-prompt a {
-    color: #0799ea;
-    font-weight: 600;
+  .signup-prompt a,
+  .text-action {
+    color: var(--link);
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+
+  .form-options a:hover,
+  .signup-prompt a:hover,
+  .text-action:hover {
+    text-decoration-thickness: 2.5px;
+  }
+
+  .text-action {
+    display: block;
+    margin: 24px 0 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
   }
 
   .login-button {
+    min-height: 56px;
     border: 0;
-    color: #fff;
-    background: #079dec;
-    font-size: 18px;
+    background: var(--brand);
+    color: var(--brand-ink);
+    font-size: 17px;
   }
 
-  .login-button:hover {
-    background: #078bd2;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(7, 157, 236, .23);
+  .login-button:hover:not(:disabled) {
+    background: var(--brand-hover);
+  }
+
+  .login-button:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .login-button:disabled {
+    opacity: .65;
+    cursor: progress;
   }
 
   .signup-prompt {
-    text-align: center;
-    margin: 20px 0 0;
+    margin: 28px 0 0;
+    color: var(--muted-foreground);
     font-size: 15px;
   }
 
-  @keyframes float-book {
-
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-
-  @keyframes reveal {
+  @keyframes ribbon-drop {
     from {
-      opacity: 0;
-      transform: translateY(18px);
+      transform: translateY(-100%);
     }
 
     to {
-      opacity: 1;
       transform: translateY(0);
     }
   }
+
+  /* ---------- Tablet / mobile: the page becomes a header strip ---------- */
 
   @media (max-width: 900px) {
     .login-layout {
@@ -612,78 +622,45 @@
     }
 
     .art-panel {
-      min-height: 42svh;
+      --logo-w: 72vw;
+      height: calc(var(--R) * 7);
     }
 
     .art-panel::before {
-      inset: -40% -15% 25%;
+      left: 8vw;
     }
 
-    .book-art-back {
-      width: 42%;
-      height: 100%;
-      bottom: -32%;
+    .art-panel::after {
+      left: calc(8vw - 13px);
+      width: 26px;
+      height: calc(var(--R) * 4);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 12px), 0 100%);
     }
 
-    .book-art-front {
-      width: 54%;
-      height: 85%;
-      left: 22%;
-      top: 23%;
+    .art-logo {
+      left: 14vw;
+      /* baseline on rule #5 */
+      top: calc(var(--R) * 2.136 - 1px);
     }
 
     .form-panel {
-      padding: 52px 24px 58px;
+      align-items: flex-start;
+      padding: 44px 24px 56px;
     }
 
+    /* the wordmark is already on screen, so the small icon header is redundant */
     .topbar {
-      height: 78px;
-    }
-
-    .brand {
-      font-size: 25px;
-    }
-
-    .brand-mark {
-      transform: scale(.82);
-      margin-right: -4px;
-    }
-
-    .language-switcher {
-      padding: 8px 12px;
+      display: none;
     }
   }
 
   @media (max-width: 480px) {
-    .art-panel {
-      min-height: 36svh;
-    }
-
-    .book-art-front {
-      width: 68%;
-      height: 95%;
-      left: 16%;
-      top: 20%;
-      border-radius: 15px 70px 90px 15px;
-    }
-
-    .book-art-back {
-      width: 48%;
-      left: -20%;
-    }
-
-    .art-caption {
-      left: 8%;
-      bottom: 16px;
-      font-size: 11px;
-    }
-
     .form-panel {
-      padding: 42px 20px 44px;
+      padding: 36px 20px 44px;
     }
 
     .subheading {
-      margin-bottom: 22px;
+      margin-bottom: 24px;
     }
 
     .social-actions {
@@ -691,9 +668,11 @@
     }
 
     .divider {
-      margin: 23px 0;
+      margin: 22px 0;
     }
   }
+
+  /* ---------- Rest of the app (unchanged) ---------- */
 
   .reader-html img {
     display: block;
@@ -736,40 +715,6 @@
 
   .dark .bg-\[\#ff6868\] {
     background-color: #c74f55 !important;
-  }
-
-  .reader-html img {
-    display: block;
-    max-width: 100%;
-    height: auto;
-    margin: 1.5rem auto;
-  }
-
-  .dark img:not([data-theme-exempt="true"]) {
-    filter: brightness(.82);
-  }
-
-  .dark .bg-\[\#f7f6f2\],
-  .dark .bg-\[\#f1eee4\],
-  .dark .bg-white {
-    background-color: var(--background) !important;
-  }
-
-  .dark .text-\[\#1c1c26\],
-  .dark .text-black {
-    color: var(--foreground) !important;
-  }
-
-  .dark .border-\[\#1c1c26\]\/10 {
-    border-color: var(--border) !important;
-  }
-
-  .dark .text-black\/50,
-  .dark .text-black\/55,
-  .dark .text-black\/60,
-  .dark .text-\[\#1c1c26\]\/60,
-  .dark .text-\[\#1c1c26\]\/70 {
-    color: var(--muted-foreground) !important;
   }
 
   @media (prefers-reduced-motion: reduce) {

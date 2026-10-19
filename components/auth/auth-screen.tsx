@@ -8,18 +8,23 @@ import { LoginForm } from "@/components/auth/login-form";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { SignupForm } from "@/components/auth/signup-form";
 import { VerifyCodeForm } from "@/components/auth/verify-code-form";
+import { literata, montserrat } from "@/components/auth/fonts";
 
-export function AuthScreen() {
+export function AuthScreen({
+  initialScreen = "login",
+}: {
+  initialScreen?: "login" | "signup" | "forgot" | "verify" | "reset";
+}) {
   const [screen, setScreen] = useState<
     "login" | "signup" | "forgot" | "verify" | "reset"
-  >("login");
+  >(initialScreen);
 
   return (
-    <main className="login-page">
-      <BrandHeader />
+    <main className={`login-page ${literata.variable} ${montserrat.variable}`}>
       <section className="login-layout" aria-labelledby="auth-title">
         <ArtworkPanel />
         <div className="form-panel">
+          <BrandHeader />
           {screen === "signup" ? (
             <SignupForm />
           ) : screen === "forgot" ? (

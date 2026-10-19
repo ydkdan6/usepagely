@@ -33,5 +33,10 @@ export async function signUp(input: unknown) {
   });
 }
 export async function signOut() {
-  return createClient().auth.signOut();
+  const result = await createClient().auth.signOut();
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("usepagely-user");
+    sessionStorage.clear();
+  }
+  return result;
 }

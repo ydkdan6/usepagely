@@ -10,7 +10,7 @@ export function ActivitySummary() {
   if (!data) return null;
   return (
     <section className="space-y-3">
-      <h2 className="text-2xl font-bold">Weekly activity</h2>
+      <h2 className="text-base font-bold">Weekly activity</h2>
       <div className="flex h-32 items-end gap-2 rounded-3xl border border-border bg-card p-5">
         {data.weekly.map((day: any) => (
           <div

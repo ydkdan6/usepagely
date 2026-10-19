@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import {
   Download,
   Highlighter,
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   async function handleLogout() {
     const { error } = await createClient().auth.signOut();
@@ -39,6 +41,42 @@ export function AppSidebar() {
 
   return (
     <>
+      {confirmLogout && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="logout-title"
+          className="fixed inset-0 z-50 grid place-items-center bg-black/30 p-4"
+        >
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-xl">
+            <h2 id="logout-title" className="text-lg font-semibold">
+              Log out of UsePagely?
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Your current session will be cleared.
+            </p>
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmLogout(false)}
+                className="rounded-xl px-4 py-2 text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setConfirmLogout(false);
+                  void handleLogout();
+                }}
+                className="rounded-xl bg-[#f15a3a] px-4 py-2 text-sm font-semibold text-white"
+              >
+                Log out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <aside className="sticky top-0 hidden h-svh w-20 shrink-0 flex-col items-center border-r border-[#1c1c26]/10 bg-[#f1eee4] py-6 md:flex">
         <Link href="/" aria-label="UsePagely home" className="brand">
           <span className="brand-mark" aria-hidden="true">
@@ -70,7 +108,7 @@ export function AppSidebar() {
         </nav>
         <button
           type="button"
-          onClick={handleLogout}
+          onClick={() => setConfirmLogout(true)}
           aria-label="Log out"
           title="Log out"
           className="flex size-11 items-center justify-center rounded-xl text-[#1c1c26] transition-colors hover:bg-[#1c1c26]/5"

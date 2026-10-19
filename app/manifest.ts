@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "UsePagely",
@@ -9,7 +10,8 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#f1eee4",
     theme_color: "#f1eee4",
     icons: [
-      { src: "/icon-light-32x32.png", sizes: "32x32", type: "image/png" },
+      { src: "/icon-192.png", sizes: "32x32", type: "image/png" },
+      { src: "/usepagely-icon.svg", sizes: "any", type: "image/svg+xml" },
     ],
   };
 }

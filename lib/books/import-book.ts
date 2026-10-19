@@ -8,6 +8,7 @@ import { resolveEnglishDescription } from "@/lib/books/descriptions";
 
 export const importSchema = z.object({
   gutenberg_id: z.coerce.number().int().positive(),
+  force: z.boolean().optional().default(false),
 });
 
 export function cleanGutenbergHtml(raw: string) {
@@ -167,7 +168,22 @@ async function storeImages(
 }
 
 export async function importBook(input: unknown) {
-  const { gutenberg_id } = importSchema.parse(input);
+  const { gutenberg_id, force } = importSchema.parse(input);
+  const supabase = createServiceSupabaseClient();
+  if (!force) {
+    const { data: existing } = await supabase
+      .from("books")
+      .select("id")
+      .eq("gutenberg_id", gutenberg_id)
+      .maybeSingle();
+    if (existing) {
+      const { count } = await supabase
+        .from("chapters")
+        .select("id", { count: "exact", head: true })
+        .eq("book_id", existing.id);
+      if ((count ?? 0) > 0) return { id: existing.id, skipped: true };
+    }
+  }
   const book = await getGutendexBook(gutenberg_id);
   const htmlUrl =
     Object.entries(book.formats).find(
@@ -181,7 +197,6 @@ export async function importBook(input: unknown) {
     )?.[1];
   const rawHtml = htmlUrl ? await fetchBookHtml(book) : null;
   const rawText = rawHtml ? null : await fetchBookText(book);
-  const supabase = createServiceSupabaseClient();
   const { data: saved, error: bookError } = await supabase
     .from("books")
     .upsert(

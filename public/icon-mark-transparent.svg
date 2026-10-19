@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="UsePagely">
+
+<g transform="">
+  <path d="M256 176C220 152 170 144 118 154V348C170 338 220 346 256 370Z" fill="#fff"/>
+  <path d="M256 176C292 152 342 144 394 154V348C342 338 292 346 256 370Z" fill="#fff" fill-opacity=".9"/>
+  <path d="M256 176V370" stroke="#f15a3a" stroke-width="6" stroke-linecap="round" opacity=".35"/>
+  <g stroke="#f15a3a" stroke-width="9" stroke-linecap="round" opacity=".38" fill="none">
+    <path d="M150 208C176 204 204 208 226 218"/>
+    <path d="M150 244C176 240 204 244 226 254"/>
+    <path d="M150 280C176 276 204 280 226 290"/>
+    <path d="M286 218C308 208 336 204 362 208"/>
+    <path d="M286 254C308 244 336 240 362 244"/>
+  </g>
+  <path d="M312 136H350V238L331 220L312 238Z" fill="#1c1c26"/>
+</g>
+</svg>

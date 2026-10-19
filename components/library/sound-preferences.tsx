@@ -27,7 +27,7 @@ export function SoundPreferences() {
   return (
     <label className="flex items-center justify-between gap-4 rounded-2xl border-2 border-black/15 px-5 py-4">
       <span>
-        <span className="block font-semibold">Button sounds</span>
+        <span className="block font-semibold text-base">Button sounds</span>
         <span className="text-sm text-black/55">
           Play a quiet click when buttons are pressed.
         </span>
@@ -37,7 +37,7 @@ export function SoundPreferences() {
         checked={enabled}
         onChange={(event) => void update(event.target.checked)}
         aria-label="Button sounds"
-        className="size-5 accent-[#109fe9]"
+        className="size-5 accent-[#c74f55]"
       />
     </label>
   );

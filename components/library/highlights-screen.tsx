@@ -118,7 +118,7 @@ export function HighlightsScreen() {
             A quiet place for the passages worth keeping.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <label className="flex min-w-56 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-sm">
             <Search className="size-4 text-muted-foreground" />
             <span className="sr-only">Search highlights</span>

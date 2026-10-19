@@ -1,5 +1,5 @@
 import { Analytics } from "@vercel/analytics/next";
-import { Montserrat } from "next/font/google";
+import localFont from "next/font/local";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { DownloadManagerProvider } from "@/components/library/download-manager";
@@ -8,33 +8,36 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { SwrProvider } from "@/components/swr-provider";
 import { OfflineBanner } from "@/components/offline-banner";
 
-const montserrat = Montserrat({
-  subsets: ["latin"],
+const montserrat = localFont({
+  src: "./fonts/montserrat-variable.ttf",
   variable: "--font-montserrat",
   display: "swap",
+  weight: "100 900",
+  style: "normal",
+  fallback: ["Arial", "Helvetica", "sans-serif"],
 });
 
 export const metadata: Metadata = {
   title: "UsePagely — Your reading journey",
   description:
     "Log in to UsePagely and continue reading stories worth staying for.",
-  generator: "v0.app",
+  generator: "anonydev",
   icons: {
     icon: [
       {
-        url: "/icon-light-32x32.png",
+        url: "/icon-192.png",
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: "/icon-dark-32x32.png",
+        url: "/icon-192.png",
         media: "(prefers-color-scheme: dark)",
       },
       {
-        url: "/icon.svg",
+        url: "/usepagely-icon.svg",
         type: "image/svg+xml",
       },
     ],
-    apple: "/apple-icon.png",
+    apple: "/apple-touch-icon.png",
   },
 };
 

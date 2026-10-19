@@ -157,14 +157,14 @@ export function ShelfScreen({
                 <div className="flex min-w-0 flex-1 flex-col justify-between">
                   <div>
                     <h2 className="text-2xl font-bold">{book.title}</h2>
-                    <p className="mt-1 text-black/55">
+                    <p className="mt-1 text-base text-black/55">
                       {book.authors?.[0] ?? "Unknown author"}
                     </p>
                   </div>
                   <div className="mt-5 flex items-center justify-between gap-3">
                     <Link
                       href={`/library/read/${book.id}`}
-                      className="rounded-xl bg-[#109fe9] px-6 py-3 text-center font-semibold text-white"
+                      className="rounded-xl bg-[#109fe9] px-6 py-3 text-center text-base font-semibold text-white"
                     >
                       {kind === "history" ? "Continue reading" : "Read book"}
                     </Link>
@@ -197,7 +197,7 @@ function MyWords() {
   }, []);
   return (
     <section className="space-y-3">
-      <h2 className="text-2xl font-bold">My words</h2>
+      <h2 className="text-base font-bold">My words</h2>
       {words.length === 0 ? (
         <p className="text-sm text-black/55">
           Saved definitions will appear here.
@@ -333,7 +333,7 @@ export function ProfileScreen() {
       <ActivitySummary />
       <label className="flex items-center justify-between rounded-2xl border border-border bg-card p-4">
         <span>
-          <strong>Daily reading goal</strong>
+          <strong className="text-base">Daily reading goal</strong>
           <span className="block text-sm text-muted-foreground">
             Choose how much you want to read each day.
           </span>
@@ -347,12 +347,20 @@ export function ProfileScreen() {
               daily_goal_minutes: Number(event.target.value),
             })
           }
-          className="select-control rounded-xl border border-border bg-background px-3 py-2 pr-8 shadow-sm outline-none transition focus:border-[#0799ea] focus:ring-2 focus:ring-[#0799ea]/15"
+          className="select-control w-[40%] rounded-xl border border-border bg-background px-3 py-2 pr-8 shadow-sm outline-none transition focus:border-[#0799ea] focus:ring-2 focus:ring-[#0799ea]/15"
         >
-          <option value={5}>5 minutes</option>
-          <option value={10}>10 minutes</option>
-          <option value={20}>20 minutes</option>
-          <option value={30}>30 minutes</option>
+          <option value={5} className="text-sm">
+            5 minutes
+          </option>
+          <option value={10} className="text-sm">
+            10 minutes
+          </option>
+          <option value={20} className="text-sm">
+            20 minutes
+          </option>
+          <option value={30} className="text-sm">
+            30 minutes
+          </option>
         </select>
       </label>
       <MyWords />
@@ -369,9 +377,10 @@ export function ProfileScreen() {
               event.target.checked ? "on" : "off",
             )
           }
+          className="accent-[#c74f55]"
         />
         <span>
-          <strong>Tap-a-word meanings</strong>
+          <strong className="text-base">Tap-a-word meanings</strong>
           <span className="block text-sm text-black/55">
             Show definitions when you double-click or long-press a word.
           </span>
@@ -379,7 +388,7 @@ export function ProfileScreen() {
       </label>
       <form onSubmit={save} className="grid gap-8 lg:grid-cols-[1fr_280px]">
         <div className="space-y-5 rounded-3xl border border-black/10 bg-white/60 p-5 sm:p-8">
-          <Field label="Email" value={email} onChange={setEmail} type="email" />
+          <Field label="Email" value={email} onChange={setEmail} type="email"/>
           <Field
             label="Username"
             value={profile.username}
@@ -398,11 +407,11 @@ export function ProfileScreen() {
             onChange={(value) => setProfile({ ...profile, phone: value })}
           />
           <label className="block rounded-2xl border-2 border-black/15 px-5 py-3">
-            <span className="block font-semibold">Bio</span>
+            <span className="block font-semibold text-base">Bio</span>
             <textarea
               value={profile.bio}
               onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-              className="w-full bg-transparent outline-none"
+              className="w-full bg-transparent outline-none text-base"
               rows={3}
             />
           </label>
@@ -427,7 +436,7 @@ export function ProfileScreen() {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-xl bg-[#109fe9] px-8 py-3 font-semibold text-white"
+            className="rounded-xl bg-[#109fe9] px-8 py-3 font-semibold text-white text-base"
           >
             {saving ? "Saving..." : "Confirm changes"}
           </button>
@@ -438,11 +447,11 @@ export function ProfileScreen() {
               profile.avatar_seed || profile.username || profile.display_name,
             )}
             alt="Profile avatar"
-            className="size-44 rounded-full object-cover shadow-xl"
+            className="size-40 rounded-full object-cover shadow-xl"
           />
           <button
             type="button"
-            className="mt-6 rounded-xl bg-[#109fe9] px-6 py-3 font-semibold text-white"
+            className="mt-6 rounded-xl bg-[#109fe9] px-6 py-3 font-semibold text-white text-base"
             onClick={() =>
               setProfile((current) => ({
                 ...current,
@@ -457,7 +466,7 @@ export function ProfileScreen() {
             onClick={() =>
               supabase.auth.signOut().then(() => location.assign("/"))
             }
-            className="mt-3 rounded-xl px-6 py-3 font-semibold text-[#ff6868]"
+            className="mt-3 rounded-xl px-6 py-3 font-semibold text-[#ff6868] text-base"
           >
             <LogOut className="mr-2 inline size-4" />
             Log out
@@ -481,14 +490,14 @@ function Field({
   disabled?: boolean;
 }) {
   return (
-    <label className="block rounded-2xl border-2 border-black/15 px-5 py-3 focus-within:border-[#109fe9]">
+    <label className="text-base block rounded-2xl border-2 border-black/15 px-5 py-3 focus-within:border-[#109fe9]">
       <span className="block font-semibold">{label}</span>
       <input
         type={type}
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-transparent outline-none"
+        className="w-full bg-transparent outline-none text-base"
       />
     </label>
   );

@@ -35,7 +35,7 @@ export function CategoryFilter() {
           <select
             value={category}
             onChange={(event) => update({ category: event.target.value })}
-            className="select-control rounded-full border border-[#1c1c26]/20 bg-white px-4 py-2.5 pr-10 text-sm shadow-sm outline-none transition focus:border-[#0799ea] focus:ring-2 focus:ring-[#0799ea]/15"
+            className="select-control w-[70%] rounded-full border border-[#1c1c26]/20 bg-white px-4 py-2.5 pr-10 text-sm shadow-sm outline-none transition focus:border-[#0799ea] focus:ring-2 focus:ring-[#0799ea]/15"
           >
             <option value="all">All</option>
             {categories

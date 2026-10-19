@@ -5,6 +5,7 @@ import { useState } from "react";
 import { signUp } from "@/lib/auth/actions";
 import { Mail, Phone, UserRound, AtSign } from "lucide-react";
 import { PasswordField } from "@/components/auth/password-field";
+import { toast } from "sonner";
 
 export function SignupForm() {
   const router = useRouter();
@@ -40,12 +41,14 @@ export function SignupForm() {
             phone: form.get("phone"),
           });
           if (error) {
-            setError(error.message);
-            setLoading(false);
+            const message =
+              "We couldn't create your account. Please check your details and try again.";
+            setError(message);
+            toast.error(message);
             return;
           }
-          if (data.session) router.push("/");
-          else router.push("/");
+          toast.success("Your account has been created.");
+          router.push("/");
         }}
       >
         <label className="field-label" htmlFor="full-name">
@@ -107,6 +110,18 @@ export function SignupForm() {
         <button className="login-button" type="submit" disabled={loading}>
           {loading ? "Creating account..." : "Sign up"}
         </button>
+        <p className="signup-prompt">
+          Already have an account?{" "}
+          <a
+            href="#login"
+            onClick={(event) => {
+              event.preventDefault();
+              router.push("/login");
+            }}
+          >
+            Log in
+          </a>
+        </p>
       </form>
     </div>
   );

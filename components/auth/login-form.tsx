@@ -23,35 +23,50 @@ export function LoginForm({
 
   return (
     <div className="form-content">
-      <div className="eyebrow">WELCOME BACK</div>
-      <h1 id="auth-title">Log in</h1>
-      <p className="subheading">Continue your reading journey.</p>
+      <h1 id="auth-title">Welcome back</h1>
+      <p className="subheading">Log in to continue your reading journey.</p>
       {error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="auth-error">
           {error}
         </p>
       )}
       <form
+        aria-busy={loading}
         onSubmit={async (event) => {
           event.preventDefault();
           setLoading(true);
           setError("");
           const form = new FormData(event.currentTarget);
-          const { error } = await signIn({
-            email: form.get("email"),
-            password: form.get("password"),
-          });
-          if (error) {
-            const message = error.message.includes("Email not confirmed")
-              ? "Please confirm your email first."
-              : "Invalid email or password.";
+          try {
+            const result = await Promise.race([
+              signIn({
+                email: form.get("email"),
+                password: form.get("password"),
+              }),
+              new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error("timeout")), 15000),
+              ),
+            ]);
+            if (result.error) throw result.error;
+            const returnTo =
+              new URLSearchParams(window.location.search).get("returnTo") ||
+              "/";
+            toast.success("Welcome back.");
+            router.refresh();
+            router.replace(returnTo.startsWith("/") ? returnTo : "/");
+          } catch (caught) {
+            const message =
+              caught instanceof Error && caught.message === "timeout"
+                ? "The login took too long. Please try again."
+                : caught instanceof Error &&
+                    caught.message.includes("Email not confirmed")
+                  ? "Please confirm your email first."
+                  : "Invalid email or password.";
             toast.error(message);
             setError(message);
+          } finally {
             setLoading(false);
-            return;
           }
-          toast.success("Welcome back.");
-          router.push("/");
         }}
       >
         <label className="field-label" htmlFor="email">
@@ -82,10 +97,10 @@ export function LoginForm({
             <span>Stay signed in</span>
           </label>
           <a
-            href="#forgot"
+            href="/forgot-password"
             onClick={(event) => {
               event.preventDefault();
-              onForgotPassword();
+              router.push("/forgot-password");
             }}
           >
             Forgot password?
@@ -101,7 +116,7 @@ export function LoginForm({
           href="#create"
           onClick={(event) => {
             event.preventDefault();
-            onCreateAccount();
+            router.push("/signup");
           }}
         >
           Create one
