@@ -166,14 +166,14 @@ export function BookDetail({ book }: { book: Book }) {
               />
             ))}
             <span className="mx-1">•</span>
-            <span>
+            <span className="text-base">
               {reviews.length} Review{reviews.length !== 1 ? "s" : ""}
             </span>
           </div>
 
           <dl className="mt-12 grid grid-cols-2 gap-x-6 gap-y-5 border-b border-[#1c1c26]/20 pb-5 sm:grid-cols-4">
             <div>
-              <dt className="font-semibold">Author</dt>
+              <dt className="font-semibold text-base-">Author</dt>
               <dd>{book.author}</dd>
             </div>
             <div>
