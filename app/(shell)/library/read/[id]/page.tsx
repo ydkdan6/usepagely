@@ -22,6 +22,8 @@ export default function ReadPage() {
           const response = await fetch(`/api/books/${id}`);
           const data = await response.json();
           if (active && response.ok) setBook(data.data);
+        } catch {
+          // Keep the offline message when the connection drops during loading.
         } finally {
           if (active) setLoading(false);
         }

@@ -9,7 +9,11 @@ export function OfflineRedirect() {
 
   useEffect(() => {
     const redirectIfOffline = () => {
-      if (!navigator.onLine && pathname !== "/offline") {
+      const canReadOffline =
+        pathname === "/offline" ||
+        pathname === "/library/downloads" ||
+        pathname.startsWith("/library/read/");
+      if (!navigator.onLine && !canReadOffline) {
         router.replace("/offline");
       }
     };

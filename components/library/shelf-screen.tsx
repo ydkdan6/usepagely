@@ -189,7 +189,7 @@ export function ShelfScreen({
                       href={`/library/read/${book.id}`}
                       className="rounded-xl bg-[#109fe9] px-6 py-3 text-center text-base font-semibold text-white"
                     >
-                      {kind === "history" ? "Continue reading" : "Read book"}
+                      {kind === "history" ? "Continue reading" : "Read book offline"}
                     </Link>
                     <button
                       aria-label={`Remove ${book.title}`}
