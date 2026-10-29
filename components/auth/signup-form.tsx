@@ -12,48 +12,72 @@ export function SignupForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (loading) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const form = new FormData(event.currentTarget);
+
+      const password = String(form.get("signup-password") ?? "");
+      const confirmPassword = String(form.get("confirm-password") ?? "");
+
+      if (password !== confirmPassword) {
+        setError("Passwords do not match.");
+        return;
+      }
+
+      const { error: signUpError } = await signUp({
+        email: String(form.get("signup-email") ?? ""),
+        password,
+        name: String(form.get("full-name") ?? ""),
+        username: String(form.get("username") ?? ""),
+        phone: String(form.get("phone") ?? ""),
+      });
+
+      if (signUpError) {
+        const message =
+          "We couldn't create your account. Please check your details and try again.";
+
+        setError(message);
+        toast.error(message);
+        return;
+      }
+
+      toast.success("Your account has been created.");
+      router.push("/");
+    } catch {
+      const message = "Something went wrong. Please try again.";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="form-content">
       <div className="eyebrow">GET STARTED</div>
+
       <h1 id="auth-title">Registration</h1>
+
       <p className="subheading">Come on and create an account</p>
+
       {error && (
         <p role="alert" className="text-sm text-red-600">
           {error}
         </p>
       )}
-      <form
-        onSubmit={async (event) => {
-          event.preventDefault();
-          setLoading(true);
-          setError("");
-          const form = new FormData(event.currentTarget);
-          if (form.get("password") !== form.get("confirm-password")) {
-            setError("Passwords do not match.");
-            setLoading(false);
-            return;
-          }
-          const { data, error } = await signUp({
-            email: form.get("signup-email"),
-            password: form.get("password"),
-            name: form.get("full-name"),
-            username: form.get("username"),
-            phone: form.get("phone"),
-          });
-          if (error) {
-            const message =
-              "We couldn't create your account. Please check your details and try again.";
-            setError(message);
-            toast.error(message);
-            return;
-          }
-          toast.success("Your account has been created.");
-          router.push("/");
-        }}
-      >
+
+      <form onSubmit={handleSubmit}>
         <label className="field-label" htmlFor="full-name">
           Full name
         </label>
+
         <div className="input-wrap">
           <UserRound aria-hidden="true" />
           <input
@@ -64,9 +88,11 @@ export function SignupForm() {
             required
           />
         </div>
+
         <label className="field-label" htmlFor="username">
           Username
         </label>
+
         <div className="input-wrap">
           <AtSign aria-hidden="true" />
           <input
@@ -77,9 +103,11 @@ export function SignupForm() {
             required
           />
         </div>
+
         <label className="field-label" htmlFor="signup-email">
           Email
         </label>
+
         <div className="input-wrap">
           <Mail aria-hidden="true" />
           <input
@@ -90,30 +118,36 @@ export function SignupForm() {
             required
           />
         </div>
+
         <label className="field-label" htmlFor="phone">
           Phone
         </label>
+
         <div className="input-wrap">
           <Phone aria-hidden="true" />
           <input id="phone" name="phone" type="tel" autoComplete="tel" />
         </div>
+
         <PasswordField
           id="signup-password"
           label="Password"
           autoComplete="new-password"
         />
+
         <PasswordField
           id="confirm-password"
           label="Confirm Password"
           autoComplete="new-password"
         />
+
         <button className="login-button" type="submit" disabled={loading}>
           {loading ? "Creating account..." : "Sign up"}
         </button>
+
         <p className="signup-prompt">
           Already have an account?{" "}
           <a
-            href="#login"
+            href="/login"
             onClick={(event) => {
               event.preventDefault();
               router.push("/login");
