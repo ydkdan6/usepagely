@@ -8,6 +8,7 @@ import { avatarDataUri } from "@/lib/avatar";
 import { useDownloadManager } from "@/components/library/download-manager";
 import { toast } from "sonner";
 import { ActivitySummary } from "@/components/library/activity-summary";
+import { getOfflineBooks, removeOfflineBook } from "@/lib/offline-db";
 
 export function ShelfScreen({
   title,
@@ -26,7 +27,6 @@ export function ShelfScreen({
       setLoading(true);
       setStorageError("");
       try {
-        const { getOfflineBooks } = await import("@/lib/offline-db");
         const localBooks = await getOfflineBooks();
         setRows(
           localBooks.map(({ book, chapters }) => ({
@@ -35,7 +35,8 @@ export function ShelfScreen({
             chapterCount: chapters.length,
           })),
         );
-      } catch {
+      } catch (error) {
+        console.error("offline read failed", error);
         setRows([]);
         setStorageError("Downloaded books could not be opened on this device.");
       } finally {
@@ -51,6 +52,8 @@ export function ShelfScreen({
         const data = await response.json();
         setRows(data.data ?? []);
       }
+    } catch {
+      setRows([]);
     } finally {
       setLoading(false);
     }
@@ -68,17 +71,16 @@ export function ShelfScreen({
       window.removeEventListener("usepagely:offline-books-changed", refresh);
     };
   }, [kind]);
-  async function remove(bookId: string) {
-    if (kind === "downloads") {
-      const { removeOfflineBook } = await import("@/lib/offline-db");
-      await removeOfflineBook(bookId);
-    } else {
-      await fetch(`/api/history/${bookId}`, { method: "DELETE" });
-    }
-    setRows((current) =>
-      current.filter((row) => String(row.book_id) !== String(bookId)),
-    );
-  }
+ async function remove(bookId: string) {
+   if (kind === "downloads") {
+     await removeOfflineBook(bookId);
+   } else {
+     await fetch(`/api/history/${bookId}`, { method: "DELETE" });
+   }
+   setRows((current) =>
+     current.filter((row) => String(row.book_id) !== String(bookId)),
+   );
+ }
   return (
     <div className="space-y-8">
       <div>
@@ -173,7 +175,7 @@ export function ShelfScreen({
                 className="group flex flex-col gap-5 rounded-3xl border border-black/10 bg-white/60 p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:flex-row sm:p-6"
               >
                 <img
-                  src={book.cover_url}
+                  src={book.coverUrl ?? book.cover_url}
                   alt={`${book.title} cover`}
                   className="h-56 w-36 rounded-xl object-cover shadow-lg sm:h-48 sm:w-32"
                 />
