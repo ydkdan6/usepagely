@@ -69,14 +69,14 @@ export function ChapterSelect({
     <section className="mt-12" aria-labelledby="chapters-heading">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 id="chapters-heading" className="text-2xl font-semibold">
+          <h2 id="chapters-heading" className="text-lg font-semibold">
             Chapters
           </h2>
           {showContinue && lastChapter && (
             <button
               type="button"
               onClick={() => onSelect(lastChapter)}
-              className="font-semibold text-[#0da4ed]"
+              className="font-semibold text-[#0da4ed] text-lg"
             >
               Continue reading
             </button>
@@ -88,7 +88,7 @@ export function ChapterSelect({
             aria-haspopup="listbox"
             aria-expanded={open}
             onClick={() => setOpen(!open)}
-            className="flex w-full items-center justify-between rounded-lg border border-[#1c1c26]/15 bg-white px-4 py-3 text-left"
+            className="flex w-full items-center justify-between rounded-lg border border-[#1c1c26]/15 bg-white px-4 py-3 text-left text-lg"
           >
             {value
               ? `Chapter ${value} - ${chapters.find((chapter) => chapter.chapterNumber === value)?.title ?? ""}`
@@ -105,7 +105,7 @@ export function ChapterSelect({
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search chapters"
                 aria-label="Search chapters"
-                className="mb-2 w-full rounded-lg border border-[#1c1c26]/15 px-3 py-2"
+                className="mb-2 w-full rounded-lg border border-[#1c1c26]/15 px-3 py-2 text-lg"
               />{" "}
               <div className="max-h-72 overflow-auto">
                 {filtered.map((chapter) => (
@@ -118,7 +118,7 @@ export function ChapterSelect({
                       onSelect(chapter.chapterNumber);
                       setOpen(false);
                     }}
-                    className="block w-full rounded-lg px-3 py-2 text-left hover:bg-black/[.04]"
+                    className="block w-full text-lg rounded-lg px-3 py-2 text-left hover:bg-black/[.04]"
                   >
                     Chapter {chapter.chapterNumber} - {chapter.title}
                   </button>

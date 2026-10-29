@@ -6,11 +6,13 @@ import {
   ArrowLeft,
   Bookmark,
   Check,
+  Download,
   Heart,
   Share2,
   Star,
   UserRound,
   X,
+
 } from "lucide-react";
 import type { Book } from "@/lib/books/types";
 import { cn } from "@/lib/utils";
@@ -173,27 +175,29 @@ export function BookDetail({ book }: { book: Book }) {
 
           <dl className="mt-12 grid grid-cols-2 gap-x-6 gap-y-5 border-b border-[#1c1c26]/20 pb-5 sm:grid-cols-4">
             <div>
-              <dt className="font-semibold text-base-">Author</dt>
-              <dd>{book.author}</dd>
+              <dt className="font-semibold text-lg">Author</dt>
+              <dd className="text-lg">{book.author}</dd>
             </div>
             <div>
-              <dt className="font-semibold">Genre</dt>
-              <dd className="capitalize">{book.category.replace("-", " ")}</dd>
+              <dt className="font-semibold text-lg">Genre</dt>
+              <dd className="capitalize text-lg">
+                {book.category.replace("-", " ")}
+              </dd>
             </div>
             <div>
-              <dt className="font-semibold">Published</dt>
-              <dd>{book.publishedYear}</dd>
+              <dt className="font-semibold text-lg">Published</dt>
+              <dd className="text-lg">{book.publishedYear}</dd>
             </div>
             <div>
-              <dt className="font-semibold">Release status</dt>
-              <dd>Available</dd>
+              <dt className="font-semibold text-lg">Release status</dt>
+              <dd className="text-lg">Available</dd>
             </div>
           </dl>
 
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <Link
               href={`/library/read/${book.id}`}
-              className="rounded-lg bg-[#0da4ed] px-10 py-3 text-base font-semibold text-white shadow-lg shadow-[#0da4ed]/20 transition hover:-translate-y-1 hover:bg-[#078fd2]"
+              className="rounded-lg bg-[#ff8467] px-10 py-3 text-base font-semibold text-white shadow-lg shadow-[#0da4ed]/20 transition hover:-translate-y-1 hover:bg-[#078fd2]"
             >
               Read
             </Link>
@@ -206,7 +210,7 @@ export function BookDetail({ book }: { book: Book }) {
               }
               onClick={toggleOffline}
             >
-              <Bookmark
+              <Download
                 className={cn(
                   "size-6",
                   managerDownload?.status === "finished" && "fill-current",
@@ -300,7 +304,7 @@ export function BookDetail({ book }: { book: Book }) {
             <p className={cn(!expanded && "line-clamp-4")}>{description}</p>
             <button
               onClick={() => setExpanded(!expanded)}
-              className="mt-1 font-semibold text-[#0da4ed] hover:underline"
+              className="mt-1 font-semibold text-[#ff8467] hover:underline"
             >
               {expanded ? "Show less" : "View more"}
             </button>
@@ -309,7 +313,7 @@ export function BookDetail({ book }: { book: Book }) {
           <ChapterList bookId={book.id} />
 
           <section className="mt-12" aria-labelledby="reviews-heading">
-            <h2 id="reviews-heading" className="mb-5 text-2xl font-semibold">
+            <h2 id="reviews-heading" className="mb-5 text-lg font-semibold">
               Comment ({reviews.length})
             </h2>
             <div className="mb-3 flex items-center gap-1">
@@ -340,11 +344,11 @@ export function BookDetail({ book }: { book: Book }) {
                 value={review}
                 onChange={(event) => setReview(event.target.value)}
                 placeholder="Share your thoughts about this book..."
-                className="min-w-0 flex-1 rounded-lg border border-[#1c1c26]/15 bg-white px-4 py-3 outline-none transition focus:border-[#0da4ed] focus:ring-2 focus:ring-[#0da4ed]/20"
+                className="min-w-0 flex-1 text-lg rounded-lg border border-[#1c1c26]/15 bg-white px-4 py-3 outline-none transition focus:border-[#0da4ed] focus:ring-2 focus:ring-[#0da4ed]/20"
               />
               <button
                 type="submit"
-                className="rounded-lg bg-[#1c1c26] px-5 font-semibold text-white transition hover:bg-[#0da4ed]"
+                className="cursor-pointer rounded-lg bg-[#1c1c26] px-5 font-semibold text-white transition hover:bg-[#ff8467] text-lg"
               >
                 Post
               </button>

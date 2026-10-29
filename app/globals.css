@@ -464,7 +464,7 @@
     align-items: center;
     gap: 10px;
     height: 54px;
-    margin-bottom: 22px;
+    margin-bottom: 15px;
     padding: 0 6px 0 10px;
     border: 0;
     border-bottom: 2px solid color-mix(in oklab, var(--foreground) 50%, transparent);
