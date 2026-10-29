@@ -1,7 +1,7 @@
 const COLUMNS = [
   {
     title: "Services",
-    links: ["Email Marketing", "Campaigns", "Branding", "Offline"],
+    links: ["Campaigns", "Branding", "Offline"],
   },
   { title: "About", links: ["Our Story", "Benefits", "Team", "Careers"] },
   { title: "Follow Us", links: ["Facebook", "Twitter", "Instagram"] },
