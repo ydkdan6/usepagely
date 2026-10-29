@@ -67,8 +67,11 @@ export function DownloadManagerProvider({
     running.current.add(book.id);
     paused.current.delete(book.id);
     cancelled.current.delete(book.id);
-    const cached = await getOfflineBook(book.id);
-    const initial = cached?.chapters.length ?? 0;
+    const cached = await getOfflineBook(String(book.id));
+    const savedChapterNumbers = new Set(
+      cached?.chapters.map((chapter) => chapter.chapterNumber) ?? [],
+    );
+    const initial = savedChapterNumbers.size;
     setDownloads((current) => [
       ...current.filter((item) => item.book.id !== book.id),
       { book, done: initial, total: 0, status: "active" },
@@ -85,14 +88,14 @@ export function DownloadManagerProvider({
         ),
       );
       let done = initial;
-      for (let startAt = initial + 1; startAt <= total; startAt += 10) {
+      for (let startAt = 1; startAt <= total; startAt += 10) {
         while (paused.current.has(book.id) && !cancelled.current.has(book.id))
           await new Promise((resolve) => setTimeout(resolve, 250));
         if (cancelled.current.has(book.id)) return;
         const numbers = Array.from(
           { length: Math.min(10, total - startAt + 1) },
           (_, index) => startAt + index,
-        );
+        ).filter((number) => !savedChapterNumbers.has(number));
         const chapters = await Promise.all(
           numbers.map(async (number) => {
             const response = await fetch(
@@ -103,8 +106,11 @@ export function DownloadManagerProvider({
             return (await response.json()).data as Chapter;
           }),
         );
-        await saveOfflineBook(book, chapters);
-        done += chapters.length;
+        if (chapters.length > 0) {
+          await saveOfflineBook(book, chapters);
+          chapters.forEach((chapter) => savedChapterNumbers.add(chapter.chapterNumber));
+          done = savedChapterNumbers.size;
+        }
         setDownloads((current) =>
           current.map((item) =>
             item.book.id === book.id

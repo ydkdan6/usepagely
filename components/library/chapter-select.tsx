@@ -24,6 +24,15 @@ export function ChapterSelect({
   const [error, setError] = useState("");
   async function load(nextPage: number) {
     try {
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        const { getOfflineBook } = await import("@/lib/offline-db");
+        const cached = await getOfflineBook(bookId);
+        if (!cached) throw new Error("No chapters are saved for this book.");
+        setChapters(cached.chapters);
+        setPage(1);
+        setTotalPages(1);
+        return;
+      }
       const response = await fetch(
         `/api/books/${bookId}/chapters?page=${nextPage}`,
         { cache: "no-store" },
