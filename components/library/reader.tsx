@@ -310,7 +310,7 @@ export function Reader({ book }: { book: Book }) {
                     Math.max(1, currentChapter - 1),
                   )
                 }
-                className="rounded-xl border px-4 py-2 disabled:opacity-40"
+                className="rounded-xl border px-4 py-2 disabled:opacity-40 text-lg"
               >
                 Previous chapter
               </button>
@@ -322,7 +322,7 @@ export function Reader({ book }: { book: Book }) {
                     Math.min(total, currentChapter + 1),
                   )
                 }
-                className="rounded-xl border px-4 py-2 disabled:opacity-40"
+                className="rounded-xl border px-4 py-2 disabled:opacity-40 text-lg"
               >
                 Next chapter
               </button>
