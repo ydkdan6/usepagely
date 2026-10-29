@@ -121,7 +121,7 @@ export function SearchSuggestions({
       role="listbox"
       // keep focus in the input so clicking a suggestion isn't lost to a blur
       onMouseDown={(event) => event.preventDefault()}
-      className="absolute left-12 right-20 top-16 z-30 max-h-80 overflow-y-auto rounded-2xl border border-[#1c1c26]/10 bg-white p-2 text-[#1c1c26] shadow-xl dark:border-white/10 dark:bg-[#1c1c26] dark:text-white"
+      className="absolute left-12 right-20 top-16 z-30 max-h-80 overflow-y-auto rounded-2xl border bg-transparent p-2 text-[#1c1c26]  dark:border-white/10 dark:bg-[#1c1c26] dark:text-white"
     >
       {SECTIONS.map(({ key, label }) => {
         const list = data[key] ?? [];
@@ -162,11 +162,11 @@ export function SearchSuggestions({
           </section>
         );
       })}
-      {items.length === 0 && (
+      {/* {items.length === 0 && (
         <p className="px-3 py-4 text-sm">
           No books found. Check the spelling or try the author&apos;s name.
         </p>
-      )}
+      )} */}
     </div>
   );
 }
