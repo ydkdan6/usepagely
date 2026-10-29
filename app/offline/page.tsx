@@ -4,6 +4,13 @@ import Link from "next/link";
 import { getOfflineBooks } from "@/lib/offline-db";
 export default function OfflinePage() {
   const [books, setBooks] = useState<any[]>([]);
+
+  useEffect(() => {
+  getOfflineBooks()
+    .then(setBooks)
+    .catch((e) => console.error("offline read failed", e));
+}, []);
+
   useEffect(() => {
     getOfflineBooks().then(setBooks);
   }, []);
@@ -13,7 +20,7 @@ export default function OfflinePage() {
       <p className="mt-2 text-muted-foreground">Available to read offline.</p>
       <div className="mt-8 grid gap-4">
         {books.map(({ book }) => (
-          <Link
+          <a
             key={book.id}
             href={`/library/read/${book.id}`}
             className="rounded-2xl border border-border bg-card p-4"
@@ -22,7 +29,7 @@ export default function OfflinePage() {
             <span className="mt-1 block text-sm text-muted-foreground">
               {book.author}
             </span>
-          </Link>
+          </a>
         ))}
         {!books.length && (
           <p className="rounded-2xl border border-border bg-card p-5">

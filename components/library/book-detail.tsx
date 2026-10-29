@@ -220,7 +220,7 @@ export function BookDetail({ book }: { book: Book }) {
             {managerDownload && (
               <div className="basis-full text-sm text-[#1c1c26]/70">
                 <progress
-                  className="mr-2 w-48 align-middle"
+                  className="mr-2 w-48 align-middle bg-amber-700 rounded-xs"
                   max={managerDownload.total || 1}
                   value={managerDownload.done}
                 />{" "}

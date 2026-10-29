@@ -80,8 +80,10 @@ export function DownloadManagerProvider({
       const titleResponse = await fetch(
         `/api/books/${book.id}/chapters?page=1`,
       );
+      if (!titleResponse.ok) throw new Error("Could not load chapter list");
       const titleData = await titleResponse.json();
       const total = titleData.total ?? 0;
+      if (!total) throw new Error("This book has no chapters to download");
       setDownloads((current) =>
         current.map((item) =>
           item.book.id === book.id ? { ...item, total } : item,
@@ -121,6 +123,11 @@ export function DownloadManagerProvider({
           ),
         );
       }
+
+      const saved = await getOfflineBook(String(book.id));
+      if (!saved || saved.chapters.length < total)
+        throw new Error("Download incomplete. Please try again.");
+
       if (!cancelled.current.has(book.id)) {
         const response = await fetch("/api/downloads", {
           method: "POST",
@@ -136,6 +143,11 @@ export function DownloadManagerProvider({
           ),
         );
         toast.success(`${book.title} is ready offline.`);
+
+        navigator.serviceWorker?.controller?.postMessage({
+          type: "cache-urls",
+          urls: [`/library/read/${book.id}`],
+        });
       }
     } catch (error) {
       const message =
