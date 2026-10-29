@@ -112,11 +112,11 @@ export function SearchSuggestions({
           ))}
         </section>
       )}
-      {items.length === 0 && (
+      {/* {items.length === 0 && (
         <p className="px-3 py-4 text-sm">
           No books found. Check the spelling or try the author&apos;s name
         </p>
-      )}
+      )} */}
     </div>
   );
 }
