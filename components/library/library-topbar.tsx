@@ -27,7 +27,7 @@ export function LibraryTopbar() {
   }, [value, q, update]);
 
   return (
-    <header className="relative sticky top-0 z-20 flex items-center gap-4 border-b border-[#1c1c26]/10 bg-[#f1eee4]/95 px-4 py-4 backdrop-blur md:px-8">
+    <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-[#1c1c26]/10 bg-[#f1eee4]/95 px-4 py-4 backdrop-blur md:px-8">
       <form
         role="search"
         className="flex min-w-0 flex-1 items-center gap-3"
@@ -46,7 +46,7 @@ export function LibraryTopbar() {
           value={value}
           onChange={(event) => setValue(event.target.value)}
           placeholder="Search book, name, author..."
-          className="w-full min-w-0 max-w-md bg-transparent text-sm text-[#1c1c26] outline-none placeholder:text-[#1c1c26]/60"
+          className="w-full min-w-0 max-w-md appearance-none bg-transparent text-base text-[#1c1c26] outline-none placeholder:text-[#1c1c26]/60 md:text-sm"
         />
       </form>
       <SearchSuggestions
@@ -56,14 +56,6 @@ export function LibraryTopbar() {
           update({ q: selected || null });
         }}
       />
-
-      <button
-        type="button"
-        className="hidden items-center gap-2 rounded-full border-2 border-[#0799ea] bg-white px-3 py-1.5 text-sm font-semibold text-[#1c1c26] sm:inline-flex"
-        aria-label="Language: English"
-      >
-        EN
-      </button>
 
       <div className="flex items-center gap-3">
         <img
@@ -80,14 +72,6 @@ export function LibraryTopbar() {
           {profile.username || profile.display_name || "Reader"}
         </span>
       </div>
-
-      <button
-        type="button"
-        aria-label="Notifications"
-        className="flex size-9 items-center justify-center rounded-full text-[#1c1c26] hover:bg-[#1c1c26]/5"
-      >
-        <Bell className="size-5" aria-hidden="true" />
-      </button>
     </header>
   );
 }
