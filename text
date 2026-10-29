@@ -1,0 +1,61 @@
+import { NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
+import { repairBookImages } from "@/lib/books/import-book";
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
+function hasAdminToken(request: Request) {
+  const expected = process.env.GUTENBERG_ADMIN_TOKEN;
+  const header = request.headers.get("authorization") ?? "";
+
+  if (!expected || !header.startsWith("Bearer ")) return false;
+
+  const given = Buffer.from(header.slice(7));
+  const wanted = Buffer.from(expected);
+
+  return given.length === wanted.length && timingSafeEqual(given, wanted);
+}
+
+export async function POST(request: Request) {
+    console.log("[repair-route] POST reached");
+  if (!hasAdminToken(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const body = await request.json().catch(() => ({}));
+
+    // Safety lock: this route only permits Gutenberg book 46.
+    const gutenbergId = Number(body.gutenberg_id ?? 46);
+
+    if (gutenbergId !== 46) {
+      return NextResponse.json(
+        { error: "Pilot mode only permits Gutenberg book 46." },
+        { status: 400 },
+      );
+    }
+
+    // Keep dry-run mode enabled. No chapter updates or image uploads.
+    const dryRun = body.dry_run !== false;
+    console.log("[gutenberg-repair] Starting", {
+      gutenbergId,
+      dryRun,
+    });
+
+    const result = await repairBookImages(46, dryRun);
+
+    console.log("[gutenberg-repair] Finished", result);
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("[gutenberg-repair] dry run failed", error);
+
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Dry run failed",
+      },
+      { status: 500 },
+    );
+  }
+}
