@@ -166,38 +166,28 @@ export function Reader({ book }: { book: Book }) {
         chapterName={current?.title ?? ""}
       >
         <main className="min-h-svh bg-[#f7f6f2] pb-20 text-[#1c1c26] [&_img]:my-8 [&_img]:mx-auto [&_img]:block [&_img]:h-auto [&_img]:max-h-[70vh] [&_img]:max-w-full [&_img]:rounded-2xl [&_img]:object-contain [&_figure]:my-10 [&_figure]:text-center [&_figcaption]:mt-3 [&_figcaption]:text-sm [&_figcaption]:italic [&_figcaption]:text-black/55">
-          <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[#1c1c26]/10 bg-[#f7f6f2]/90 px-5 py-4 backdrop-blur md:px-10">
+          <header className="sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-[#1c1c26]/10 bg-[#f7f6f2]/90 px-3 py-3 backdrop-blur sm:gap-4 sm:px-5 sm:py-4 md:px-10">
             <Link
               href={`/library/book/${book.id}`}
-              className="flex items-center gap-3 font-semibold"
+              className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold sm:gap-3 sm:text-base md:text-lg"
             >
-              <ArrowLeft className="size-6" />
-              <span className="max-w-[240px] truncate">{book.title}</span>
+              <ArrowLeft className="size-5 shrink-0 sm:size-6" />
+              <span className="truncate">{book.title}</span>
             </Link>
-            <div className="flex items-center gap-2">
-              <span className="hidden text-xs text-black/50 sm:inline">
+
+            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+              <span className="hidden text-xs text-black/50 md:inline">
                 {offline ? "Offline" : "Synced"}
               </span>
-              <button
-                onClick={() => setBookmarked(!bookmarked)}
-                aria-label="Save bookmark"
-                className={
-                  bookmarked
-                    ? "rounded-xl bg-[#ff6868] p-3 text-white"
-                    : "rounded-xl p-3 hover:bg-black/5"
-                }
-              >
-                <Bookmark
-                  className="size-5"
-                  fill={bookmarked ? "currentColor" : "none"}
-                />
-              </button>
+
               <label
-                className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm"
+                className="flex items-center gap-1.5 px-1 text-sm sm:gap-2 sm:px-3"
                 htmlFor="reader-font-size"
               >
                 <span className="sr-only">Font size</span>
-                <span aria-hidden="true">A</span>
+                <span aria-hidden="true" className="text-xs">
+                  A
+                </span>
                 <input
                   id="reader-font-size"
                   type="range"
@@ -206,17 +196,27 @@ export function Reader({ book }: { book: Book }) {
                   step="1"
                   value={fontSize}
                   onChange={(event) => setFontSize(Number(event.target.value))}
-                  className="w-20"
+                  className="w-16 sm:w-20 md:w-24"
                 />
                 <span aria-hidden="true" className="text-lg">
                   A
                 </span>
               </label>
-              <button className="rounded-xl p-3 hover:bg-black/5">
-                <Settings2 className="size-5" />
-              </button>
-              <button className="rounded-xl p-3 hover:bg-black/5">
-                <Menu className="size-5" />
+
+              <button
+                onClick={() => setBookmarked(!bookmarked)}
+                aria-label="Save bookmark"
+                aria-pressed={bookmarked}
+                className={
+                  bookmarked
+                    ? "rounded-xl bg-[#ff6868] p-2 text-white sm:p-3"
+                    : "rounded-xl p-2 hover:bg-black/5 sm:p-3"
+                }
+              >
+                <Bookmark
+                  className="size-4 sm:size-5"
+                  fill={bookmarked ? "currentColor" : "none"}
+                />
               </button>
             </div>
           </header>
