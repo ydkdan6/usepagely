@@ -1,6 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+type Suggestion = {
+  id: string | number;
+  title: string;
+  authors?: string[] | string;
+};
+
+type SuggestData = {
+  library?: Suggestion[];
+  gutenberg?: Suggestion[];
+  didYouMean?: Suggestion[];
+  noResults?: boolean;
+};
+
+const SECTIONS = [
+  { key: "library", label: "In your library" },
+  { key: "gutenberg", label: "From Gutenberg" },
+  { key: "didYouMean", label: "Did you mean..." },
+] as const;
 
 export function SearchSuggestions({
   query,
@@ -9,114 +28,145 @@ export function SearchSuggestions({
   query: string;
   onSelect: (value: string) => void;
 }) {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<SuggestData | null>(null);
   const [active, setActive] = useState(-1);
-  const controller = useRef<AbortController | null>(null);
+  const [open, setOpen] = useState(true);
+  const suppressed = useRef<string | null>(null);
+
+  // Fetch suggestions (debounced, previous request aborted on every change)
   useEffect(() => {
     const value = query.trim();
-    if (value.length < 2) {
+    if (value.length < 2 || suppressed.current === value) {
       setData(null);
       setActive(-1);
       return;
     }
+    suppressed.current = null;
+    setOpen(true);
+
+    const controller = new AbortController();
     const timer = setTimeout(async () => {
-      controller.current?.abort();
-      controller.current = new AbortController();
       try {
         const response = await fetch(
           `/api/search/suggest?q=${encodeURIComponent(value)}`,
-          { signal: controller.current.signal },
+          { signal: controller.signal },
         );
+        if (!response.ok)
+          throw new Error(`Suggest failed (${response.status})`);
         setData(await response.json());
+        setActive(-1);
       } catch (error) {
         if ((error as Error).name !== "AbortError")
-          setData({ library: [], gutenberg: [], noResults: true });
+          setData({ noResults: true });
       }
     }, 250);
-    return () => clearTimeout(timer);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [query]);
-  const items = [
-    ...(data?.library ?? []),
-    ...(data?.gutenberg ?? []),
-    ...(data?.didYouMean ?? []),
-  ];
-  if (!data || query.trim().length < 2) return null;
+
+  // One flat list so keyboard index matches what's on screen
+  const items = useMemo(
+    () => SECTIONS.flatMap(({ key }) => data?.[key] ?? []),
+    [data],
+  );
+
+  const select = useCallback(
+    (title: string) => {
+      suppressed.current = title.trim(); // stop the dropdown reopening for this text
+      setData(null);
+      setActive(-1);
+      onSelect(title);
+    },
+    [onSelect],
+  );
+
+  const visible = open && !!data && query.trim().length >= 2;
+
+  // Keyboard handling: focus lives in the search input, so listen on window
+  useEffect(() => {
+    if (!visible) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "ArrowDown" && items.length) {
+        event.preventDefault();
+        setActive((i) => (i + 1) % items.length);
+      } else if (event.key === "ArrowUp" && items.length) {
+        event.preventDefault();
+        setActive((i) => (i <= 0 ? items.length - 1 : i - 1));
+      } else if (event.key === "Escape") {
+        setOpen(false);
+      } else if (event.key === "Enter" && items[active]) {
+        event.preventDefault(); // don't submit the form with the partial query
+        select(items[active].title);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [visible, items, active, select]);
+
+  useEffect(() => {
+    if (active >= 0)
+      document
+        .getElementById(`suggestion-${active}`)
+        ?.scrollIntoView({ block: "nearest" });
+  }, [active]);
+
+  if (!visible || !data) return null;
+
+  let offset = 0;
   return (
     <div
-      className="absolute left-12 right-20 top-16 z-30 overflow-hidden rounded-2xl border border-[#1c1c26]/10 bg-white p-2 text-[#1c1c26] shadow-xl dark:border-white/10 dark:bg-[#1c1c26] dark:text-white"
-      onKeyDown={(event) => {
-        if (event.key === "ArrowDown") {
-          event.preventDefault();
-          setActive((index) => Math.min(index + 1, items.length - 1));
-        }
-        if (event.key === "ArrowUp") {
-          event.preventDefault();
-          setActive((index) => Math.max(index - 1, 0));
-        }
-        if (event.key === "Escape") setData(null);
-        if (event.key === "Enter" && items[active])
-          onSelect(items[active].title);
-      }}
-      tabIndex={0}
+      role="listbox"
+      // keep focus in the input so clicking a suggestion isn't lost to a blur
+      onMouseDown={(event) => event.preventDefault()}
+      className="absolute left-12 right-20 top-16 z-30 max-h-80 overflow-y-auto rounded-2xl border border-[#1c1c26]/10 bg-white p-2 text-[#1c1c26] shadow-xl dark:border-white/10 dark:bg-[#1c1c26] dark:text-white"
     >
-      {data.library?.length > 0 && (
-        <section>
-          <p className="px-3 py-2 text-xs font-bold uppercase opacity-60">
-            In your library
-          </p>
-          {data.library.map((book: any, index: number) => (
-            <button
-              key={book.id}
-              className={`block w-full rounded-xl px-3 py-2 text-left text-sm ${active === index ? "bg-black/10 dark:bg-white/10" : ""}`}
-              onClick={() => onSelect(book.title)}
-            >
-              {book.title}
-              <span className="block text-xs opacity-60">
-                {Array.isArray(book.authors)
-                  ? book.authors.join(", ")
-                  : book.authors}
-              </span>
-            </button>
-          ))}
-        </section>
-      )}
-      {data.gutenberg?.length > 0 && (
-        <section>
-          <p className="px-3 py-2 text-xs font-bold uppercase opacity-60">
-            From Gutenberg
-          </p>
-          {data.gutenberg.map((book: any, index: number) => (
-            <button
-              key={book.id}
-              className={`block w-full rounded-xl px-3 py-2 text-left text-sm ${active === (data.library?.length ?? 0) + index ? "bg-black/10 dark:bg-white/10" : ""}`}
-              onClick={() => onSelect(book.title)}
-            >
-              {book.title}
-            </button>
-          ))}
-        </section>
-      )}
-      {data.didYouMean?.length > 0 && (
-        <section>
-          <p className="px-3 py-2 text-xs font-bold uppercase opacity-60">
-            Did you mean...
-          </p>
-          {data.didYouMean.map((book: any, index: number) => (
-            <button
-              key={book.id}
-              className="block w-full rounded-xl px-3 py-2 text-left text-sm"
-              onClick={() => onSelect(book.title)}
-            >
-              {book.title}
-            </button>
-          ))}
-        </section>
-      )}
-      {/* {items.length === 0 && (
+      {SECTIONS.map(({ key, label }) => {
+        const list = data[key] ?? [];
+        const start = offset;
+        offset += list.length;
+        if (!list.length) return null;
+        return (
+          <section key={key}>
+            <p className="px-3 py-2 text-xs font-bold uppercase opacity-60">
+              {label}
+            </p>
+            {list.map((book, i) => {
+              const index = start + i;
+              return (
+                <button
+                  key={`${key}-${book.id}`}
+                  id={`suggestion-${index}`}
+                  role="option"
+                  aria-selected={active === index}
+                  type="button"
+                  className={`block w-full rounded-xl px-3 py-2 text-left text-sm ${
+                    active === index ? "bg-black/10 dark:bg-white/10" : ""
+                  }`}
+                  onMouseEnter={() => setActive(index)}
+                  onClick={() => select(book.title)}
+                >
+                  {book.title}
+                  {book.authors && (
+                    <span className="block text-xs opacity-60">
+                      {Array.isArray(book.authors)
+                        ? book.authors.join(", ")
+                        : book.authors}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </section>
+        );
+      })}
+      {items.length === 0 && (
         <p className="px-3 py-4 text-sm">
-          No books found. Check the spelling or try the author&apos;s name
+          No books found. Check the spelling or try the author&apos;s name.
         </p>
-      )} */}
+      )}
     </div>
   );
 }
