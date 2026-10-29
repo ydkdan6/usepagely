@@ -35,6 +35,12 @@ export function ShelfScreen({
             chapterCount: chapters.length,
           })),
         );
+        if (navigator.onLine) {
+          navigator.serviceWorker?.controller?.postMessage({
+            type: "cache-urls",
+            urls: localBooks.map(({ book }) => `/library/read/${book.id}`),
+          });
+        }
       } catch (error) {
         console.error("offline read failed", error);
         setRows([]);
@@ -193,14 +199,14 @@ export function ShelfScreen({
                     )}
                   </div>
                   <div className="mt-5 flex items-center justify-between gap-3">
-                    <Link
+                    <a
                       href={`/library/read/${book.id}`}
                       className="rounded-xl bg-[#109fe9] px-6 py-3 text-center text-base font-semibold text-white"
                     >
                       {kind === "history"
                         ? "Continue reading"
                         : "Read book offline"}
-                    </Link>
+                    </a>
                     <button
                       aria-label={`Remove ${book.title}`}
                       onClick={() => {
