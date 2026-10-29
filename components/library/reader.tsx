@@ -40,10 +40,12 @@ export function Reader({ book }: { book: Book }) {
   const loadChapter = useCallback(async () => {
     setError("");
     const cached = await getOfflineBook(book.id);
-    if (typeof navigator !== "undefined" && !navigator.onLine && cached) {
-      const cachedChapter = await getOfflineChapter(book.id, chapter);
+    if (cached && (typeof navigator === "undefined" || !navigator.onLine)) {
+      const cachedChapter = await getOfflineChapter(String(book.id), chapter);
       if (!cachedChapter) {
-        setError("This chapter is not available offline.");
+        setError(
+          "This chapter is not available offline. Download it before reading without internet.",
+        );
         return;
       }
       setChapters(cached.chapters);

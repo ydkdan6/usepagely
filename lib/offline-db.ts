@@ -30,7 +30,8 @@ export async function setDictionaryCache(word: string, value: unknown) {
 }
 export async function saveOfflineBook(book: Book, chapters: Chapter[]) {
   const value = await db();
-  const existing = await value.get("books", book.id);
+  const bookId = String(book.id);
+  const existing = await value.get("books", bookId);
   const merged = new Map(
     [...(existing?.chapters ?? []), ...chapters].map((chapter) => [
       chapter.chapterNumber,
@@ -40,14 +41,15 @@ export async function saveOfflineBook(book: Book, chapters: Chapter[]) {
   await value.put(
     "books",
     {
-      book,
+      book: { ...book, id: bookId },
       chapters: [...merged.values()].sort(
         (a, b) => a.chapterNumber - b.chapterNumber,
       ),
       savedAt: Date.now(),
     },
-    book.id,
+    bookId,
   );
+  window.dispatchEvent(new Event("usepagely:offline-books-changed"));
 }
 export async function getOfflineChapter(id: string, chapterNumber: number) {
   const cached = await getOfflineBook(id);
@@ -56,7 +58,7 @@ export async function getOfflineChapter(id: string, chapterNumber: number) {
   );
 }
 export async function getOfflineBook(id: string) {
-  return (await db()).get("books", id);
+  return (await db()).get("books", String(id));
 }
 export async function getOfflineBooks() {
   return (await db()).getAll("books");
@@ -65,7 +67,8 @@ export async function persistOfflineStorage() {
   return navigator.storage?.persist?.() ?? false;
 }
 export async function removeOfflineBook(id: string) {
-  await (await db()).delete("books", id);
+  await (await db()).delete("books", String(id));
+  window.dispatchEvent(new Event("usepagely:offline-books-changed"));
 }
 export async function saveProgress(id: string, chapter: number, offset = 0) {
   await (

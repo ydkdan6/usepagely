@@ -19,25 +19,27 @@ export function ShelfScreen({
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loggedOut, setLoggedOut] = useState(false);
+  const [storageError, setStorageError] = useState("");
   const { downloads, pause, resume, cancel } = useDownloadManager();
   async function load() {
     if (kind === "downloads") {
-      const { getOfflineBooks } = await import("@/lib/offline-db");
-      const localBooks = await getOfflineBooks();
-      setRows(
-        localBooks.map(({ book }) => ({ book_id: book.id, books: book })),
-      );
-      setLoading(false);
-      if (!navigator.onLine) return;
+      setLoading(true);
+      setStorageError("");
       try {
-        const response = await fetch("/api/downloads", { cache: "no-store" });
-        if (response.ok) {
-          const data = await response.json();
-          const remote = data.data ?? [];
-          setRows((current) => (current.length ? current : remote));
-        }
+        const { getOfflineBooks } = await import("@/lib/offline-db");
+        const localBooks = await getOfflineBooks();
+        setRows(
+          localBooks.map(({ book, chapters }) => ({
+            book_id: String(book.id),
+            books: book,
+            chapterCount: chapters.length,
+          })),
+        );
       } catch {
-        /* local downloads remain available */
+        setRows([]);
+        setStorageError("Downloaded books could not be opened on this device.");
+      } finally {
+        setLoading(false);
       }
       return;
     }
@@ -55,13 +57,27 @@ export function ShelfScreen({
   }
   useEffect(() => {
     void load();
+    if (kind !== "downloads") return;
+    const refresh = () => void load();
+    window.addEventListener("focus", refresh);
+    window.addEventListener("online", refresh);
+    window.addEventListener("usepagely:offline-books-changed", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("online", refresh);
+      window.removeEventListener("usepagely:offline-books-changed", refresh);
+    };
   }, [kind]);
   async function remove(bookId: string) {
-    await fetch(
-      `/${kind === "history" ? "api/history" : "api/downloads"}/${bookId}`,
-      { method: "DELETE" },
+    if (kind === "downloads") {
+      const { removeOfflineBook } = await import("@/lib/offline-db");
+      await removeOfflineBook(bookId);
+    } else {
+      await fetch(`/api/history/${bookId}`, { method: "DELETE" });
+    }
+    setRows((current) =>
+      current.filter((row) => String(row.book_id) !== String(bookId)),
     );
-    setRows((current) => current.filter((row) => row.book_id !== bookId));
   }
   return (
     <div className="space-y-8">
@@ -130,6 +146,13 @@ export function ShelfScreen({
           Log in to see your{" "}
           {kind === "history" ? "reading history" : "downloads"}.
         </p>
+      ) : storageError ? (
+        <p
+          role="alert"
+          className="rounded-3xl border border-red-200 bg-red-50 p-10 text-center text-red-800"
+        >
+          {storageError}
+        </p>
       ) : loading ? (
         <p className="rounded-3xl border border-black/10 bg-white/60 p-10 text-center">
           Loading...
@@ -158,8 +181,14 @@ export function ShelfScreen({
                   <div>
                     <h2 className="text-2xl font-bold">{book.title}</h2>
                     <p className="mt-1 text-base text-black/55">
-                      {book.authors?.[0] ?? "Unknown author"}
+                      {book.authors?.[0] ?? book.author ?? "Unknown author"}
                     </p>
+                    {kind === "downloads" && (
+                      <p className="mt-2 text-sm text-black/55">
+                        {row.chapterCount} chapter
+                        {row.chapterCount === 1 ? "" : "s"} saved locally
+                      </p>
+                    )}
                   </div>
                   <div className="mt-5 flex items-center justify-between gap-3">
                     <Link
@@ -388,7 +417,7 @@ export function ProfileScreen() {
       </label>
       <form onSubmit={save} className="grid gap-8 lg:grid-cols-[1fr_280px]">
         <div className="space-y-5 rounded-3xl border border-black/10 bg-white/60 p-5 sm:p-8">
-          <Field label="Email" value={email} onChange={setEmail} type="email"/>
+          <Field label="Email" value={email} onChange={setEmail} type="email" />
           <Field
             label="Username"
             value={profile.username}
