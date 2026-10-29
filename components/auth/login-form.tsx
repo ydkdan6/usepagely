@@ -96,7 +96,7 @@ export function LoginForm({
             />
             <span>Stay signed in</span>
           </label>
-          <a
+          {/* <a
             href="/forgot-password"
             onClick={(event) => {
               event.preventDefault();
@@ -104,7 +104,7 @@ export function LoginForm({
             }}
           >
             Forgot password?
-          </a>
+          </a> */}
         </div>
         <button className="login-button" type="submit" disabled={loading}>
           {loading ? "Logging in..." : "Log in"}

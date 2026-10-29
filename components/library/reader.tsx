@@ -163,7 +163,7 @@ export function Reader({ book }: { book: Book }) {
         chapterNumber={chapter}
         chapterName={current?.title ?? ""}
       >
-        <main className="min-h-svh bg-[#f7f6f2] pb-20 text-[#1c1c26] [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-lg [&_img]:object-contain">
+        <main className="min-h-svh bg-[#f7f6f2] pb-20 text-[#1c1c26] [&_img]:my-8 [&_img]:mx-auto [&_img]:block [&_img]:h-auto [&_img]:max-h-[70vh] [&_img]:max-w-full [&_img]:rounded-2xl [&_img]:object-contain [&_figure]:my-10 [&_figure]:text-center [&_figcaption]:mt-3 [&_figcaption]:text-sm [&_figcaption]:italic [&_figcaption]:text-black/55">
           <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[#1c1c26]/10 bg-[#f7f6f2]/90 px-5 py-4 backdrop-blur md:px-10">
             <Link
               href={`/library/book/${book.id}`}
@@ -255,9 +255,7 @@ export function Reader({ book }: { book: Book }) {
                       />
                     ) : (
                       <div className="whitespace-pre-wrap">
-                        {current?.htmlContent ??
-                          current?.content ??
-                          "Loading chapter…"}
+                        {current?.content ?? "Loading chapter…"}
                       </div>
                     )}
                   </div>
@@ -310,7 +308,7 @@ export function Reader({ book }: { book: Book }) {
                     Math.max(1, currentChapter - 1),
                   )
                 }
-                className="rounded-xl border px-4 py-2 disabled:opacity-40 text-lg"
+                className="rounded-xl border px-4 py-2 disabled:opacity-40"
               >
                 Previous chapter
               </button>
@@ -322,7 +320,7 @@ export function Reader({ book }: { book: Book }) {
                     Math.min(total, currentChapter + 1),
                   )
                 }
-                className="rounded-xl border px-4 py-2 disabled:opacity-40 text-lg"
+                className="rounded-xl border px-4 py-2 disabled:opacity-40"
               >
                 Next chapter
               </button>

@@ -150,14 +150,15 @@ async function storeImages(
               upsert: true,
               contentType: response.headers.get("content-type") ?? "image/jpeg",
             });
-          if (upload.error) return [match[0], ""] as const;
+          if (upload.error)
+            return [match[0], match[0].replace(match[2], source)] as const;
           const url = db.storage.from("book-images").getPublicUrl(path)
             .data.publicUrl;
           seen.set(source, url);
           imageBytes += bytes.byteLength;
           return [match[0], match[0].replace(match[2], url)] as const;
         } catch {
-          return [match[0], ""] as const;
+          return [match[0], match[0].replace(match[2], source)] as const;
         }
       },
     ),
