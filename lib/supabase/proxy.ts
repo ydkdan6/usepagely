@@ -11,6 +11,21 @@ export async function updateSession(request: NextRequest) {
       pathname.startsWith("/api/categories/"));
   if (isPublicGetRoute) return NextResponse.next({ request });
 
+  const canReadOffline =
+    pathname === "/offline" ||
+    pathname === "/library/downloads" ||
+    pathname.startsWith("/library/read/");
+
+  // Offline downloads must be reachable without asking Supabase for a session.
+  // A session lookup requires the network and was sending logged-out users to /login.
+  if (canReadOffline) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-offline-access", "1");
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+  }
+
   let response = NextResponse.next({ request });
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
