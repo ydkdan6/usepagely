@@ -55,13 +55,21 @@ export function LoginForm({
             router.refresh();
             router.replace(returnTo.startsWith("/") ? returnTo : "/");
           } catch (caught) {
-            const message =
-              caught instanceof Error && caught.message === "timeout"
-                ? "The login took too long. Please try again."
-                : caught instanceof Error &&
-                    caught.message.includes("Email not confirmed")
-                  ? "Please confirm your email first."
-                  : "Invalid email or password.";
+            const networkUnavailable =
+              typeof navigator !== "undefined" && !navigator.onLine;
+            const caughtMessage =
+              caught instanceof Error ? caught.message.toLowerCase() : "";
+            const message = networkUnavailable ||
+              caughtMessage.includes("network") ||
+              caughtMessage.includes("fetch") ||
+              caughtMessage.includes("failed to fetch")
+                ? "No network or poor connection."
+                : caught instanceof Error && caught.message === "timeout"
+                  ? "The login took too long. Please try again."
+                  : caught instanceof Error &&
+                      caught.message.includes("Email not confirmed")
+                    ? "Please confirm your email first."
+                    : "Invalid email or password.";
             toast.error(message);
             setError(message);
           } finally {
