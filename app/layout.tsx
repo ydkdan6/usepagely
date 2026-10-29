@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SwrProvider } from "@/components/swr-provider";
 import { OfflineBanner } from "@/components/offline-banner";
+import { OfflineRedirect } from "@/components/offline-redirect";
 
 const montserrat = localFont({
   src: "./fonts/montserrat-variable.ttf",
@@ -57,6 +58,7 @@ export default function RootLayout({
         <ThemeProvider>
           <SwrProvider>
             <OfflineBanner />
+            <OfflineRedirect />
             <DownloadManagerProvider>
               {children}
               <Toaster position="bottom-right" richColors closeButton />

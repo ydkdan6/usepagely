@@ -43,12 +43,18 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/auth/");
   if (user && authRoute && !pathname.startsWith("/auth/callback"))
     return NextResponse.redirect(new URL("/", request.url));
-  if (
-    !user &&
-    !authRoute &&
-    !pathname.startsWith("/api/") &&
-    !pathname.startsWith("/offline")
-  ) {
+  const canReadOffline =
+    pathname === "/offline" ||
+    pathname === "/library/downloads" ||
+    pathname.startsWith("/library/read/");
+  if (canReadOffline) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-offline-access", "1");
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+  }
+  if (!user && !authRoute && !pathname.startsWith("/api/")) {
     const login = new URL("/login", request.url);
     login.searchParams.set("returnTo", `${pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(login);

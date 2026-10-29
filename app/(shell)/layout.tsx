@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { LibraryShell } from "@/components/library/library-shell";
 import { createClient } from "@/lib/supabase/server";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
@@ -13,9 +14,13 @@ export default async function LibraryLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const {
-    data: { user },
-  } = await (await createClient()).auth.getUser();
-  if (!user) redirect(`/login?returnTo=${encodeURIComponent("/")}`);
+  const requestHeaders = await headers();
+  const offlineAccess = requestHeaders.get("x-offline-access") === "1";
+  if (!offlineAccess) {
+    const {
+      data: { user },
+    } = await (await createClient()).auth.getUser();
+    if (!user) redirect(`/login?returnTo=${encodeURIComponent("/")}`);
+  }
   return <LibraryShell>{children}</LibraryShell>;
 }

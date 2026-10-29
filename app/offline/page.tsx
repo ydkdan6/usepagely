@@ -15,7 +15,7 @@ export default function OfflinePage() {
         {books.map(({ book }) => (
           <Link
             key={book.id}
-            href={`/library/book/${book.id}/read`}
+            href={`/library/read/${book.id}`}
             className="rounded-2xl border border-border bg-card p-4"
           >
             <strong>{book.title}</strong>

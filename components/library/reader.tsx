@@ -91,7 +91,7 @@ export function Reader({ book }: { book: Book }) {
       setOffline(false);
     } catch (cause) {
       if (cached) {
-        const cachedChapter = await getOfflineChapter(book.id, chapter);
+        const cachedChapter = await getOfflineChapter(String(book.id), chapter);
         if (cachedChapter) {
           setChapters(cached.chapters);
           setTotalChapters(cached.chapters.length);
