@@ -26,32 +26,45 @@ export function SignupForm() {
       const password = String(form.get("signup-password") ?? "");
       const confirmPassword = String(form.get("confirm-password") ?? "");
 
+      if (password.length < 8) {
+        setError("Password must be at least 8 characters.");
+        return;
+      }
       if (password !== confirmPassword) {
         setError("Passwords do not match.");
         return;
       }
 
-      const { error: signUpError } = await signUp({
-        email: String(form.get("signup-email") ?? ""),
+      const { data, error: signUpError } = await signUp({
+        email: String(form.get("signup-email") ?? "").trim(),
         password,
-        name: String(form.get("full-name") ?? ""),
-        username: String(form.get("username") ?? ""),
-        phone: String(form.get("phone") ?? ""),
+        name: String(form.get("full-name") ?? "").trim(),
+        username: String(form.get("username") ?? "").trim(),
+        phone: String(form.get("phone") ?? "").trim(),
       });
 
       if (signUpError) {
-        const message =
-          "We couldn't create your account. Please check your details and try again.";
+        console.error("signUp failed:", signUpError.message);
+        setError(signUpError.message);
+        toast.error(signUpError.message);
+        return;
+      }
 
-        setError(message);
-        toast.error(message);
+      // Email confirmation on: no session yet
+      if (!data?.session) {
+        toast.success("Check your email to confirm your account.");
+        router.push("/login");
         return;
       }
 
       toast.success("Your account has been created.");
       router.push("/");
-    } catch {
-      const message = "Something went wrong. Please try again.";
+    } catch (err) {
+      console.error("signup crashed:", err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.";
       setError(message);
       toast.error(message);
     } finally {
@@ -100,6 +113,11 @@ export function SignupForm() {
             name="username"
             type="text"
             autoComplete="username"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            pattern="[A-Za-z0-9_]{3,20}"
+            title="3-20 characters: letters, numbers, underscore"
             required
           />
         </div>
